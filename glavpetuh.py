@@ -14,10 +14,13 @@ TRUSTED = [-188672102, # testdebug
 bot = telepot.Bot(TOKEN)
 
 daddy = 'http://i.imgur.com/b8XZVvx.jpg'
-help_msg = """/who <nickname> - показать инфу об ублюдке
+help_msg = \
+"""
+/who <nickname> - показать инфу об ублюдке
 /add <nickname> <описание> - добавить ублюдка
 /del <nickname> - убрать ублюдка
-/lvl <lvl> <процент> - опыт до повышения уровня"""
+/lvl <lvl> <процент> - опыт до повышения уровня
+"""
 
 def handle(msg):
     pprint(msg)
@@ -26,7 +29,6 @@ def handle(msg):
 
     if chat_id not in TRUSTED:
         bot.sendMessage(chat_id, 'Недостаточно прав')
-        return False
 
     command = msg['text'].split()
     sender  = msg['from']['first_name']
@@ -36,14 +38,11 @@ def handle(msg):
     try:
         if cmd == '/help':
             bot.sendMessage(chat_id, help_msg)
-            return None
         elif cmd == '/whoisyourdaddy':
             bot.sendPhoto(chat_id, daddy)
-            return None
         elif cmd == '/who':
             output = ublydok.get_data(args[1])
             bot.sendMessage(chat_id, output)
-            return None
         elif cmd == '/add':
             name   = command[1]
             descr  = ' '.join(command[2:])
@@ -54,17 +53,18 @@ def handle(msg):
             bot.sendMessage(chat_id, output)
         elif cmd == '/lvl':
             lvl = args[1]
+
             if len(command) == 3:
                 percent = args[2].strip('%')
             else:
                 percent = None
+
             output = sender + ', ' + ublydok.calculate_exp(lvl, percent)
             bot.sendMessage(chat_id, output)
     except IndexError:
         return None
 
 bot.message_loop(handle)
-print('listening... ')
 
 while 1:
     time.sleep(10)
