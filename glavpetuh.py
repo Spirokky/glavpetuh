@@ -2,6 +2,7 @@ import ublydok
 import telepot
 import sys
 import time
+import l2onparser
 
 from pprint import pprint
 
@@ -61,10 +62,18 @@ def handle(msg):
 
             output = sender + ', ' + ublydok.calculate_exp(lvl, percent)
             bot.sendMessage(chat_id, output)
+        elif cmd == '/quote':
+            output = str(ublydok.quote())
+            bot.sendMessage(chat_id, output)
+        else:
+            cmd = cmd.strip('/ ')
+            output = l2onparser.parse(cmd)
+            bot.sendMessage(chat_id, output)
     except IndexError:
         return None
 
 bot.message_loop(handle)
+pprint(bot.getMe())
 
 while 1:
     time.sleep(10)
