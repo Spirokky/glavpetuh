@@ -9,16 +9,20 @@ from pprint import pprint
 from bs4 import BeautifulSoup
 
 url = 'http://l2on.net'
+output = """\
+{name} {title}
+{prof} - {lvl}
+Max.HP: {maxhp}
+Max.MP: {maxmp}
+Клан: {clan}
+Замечен: {first_spotted}
+Обновлен: {last_spotted}
+
+Аммуниция:\n
+"""
 
 
 def is_valid(nickname):
-
-    """
-    returns 0 if nickname is invalid
-    returns 1 if nickname is cyrillic
-    returns 2 if nickname is valid
-    """
-
     for char in nickname:
         if char in string.punctuation + string.whitespace:
             return 0
@@ -29,9 +33,9 @@ def is_valid(nickname):
     if match:
         return 1
 
-def parser(nickname):
+def parse(nickname): 
     valid = is_valid(nickname)
-    
+
     if valid == 0:
         return 'Невалидное имя'
     elif valid == 1:
@@ -45,10 +49,12 @@ def parser(nickname):
               'type': 'char',
               'name': name}
 
-    req     = requests.get(url, params=values)
+    req     = requests.get(url, params=values) # ConnectionError
     soup    = BeautifulSoup(req.text, 'html.parser')
     table   = soup.find_all('a', 'black', href=re.compile('id'))
     players = table[::2]
+
+    player_url = None
 
     for i in players:
         if i.text.lower() == nickname.lower():
@@ -58,13 +64,14 @@ def parser(nickname):
             player_id  = str(i)[start:end]
             player_url = 'http://l2on.net/?c=userdata&a=char&' + player_id
             break
-        else:
-            player_url = None
     
     if not player_url:
-        print('Ничего не найдено')
+        return 'Ничего не найдено'
     else:
-        print(player_url)
+        return player_url
 
-while 1:
-    parser(input('name: '))
+#     req = requests.get(player_url)
+#     soup = BeautifulSoup(req, 'html.parser')
+    
+
+# parse('стригущийлишай')
