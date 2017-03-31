@@ -23,7 +23,6 @@ help_msg = \
 /lvl <lvl> <процент> - опыт до повышения уровня
 """
 
-random.seed(time.time())
 def handle(msg):
     pprint(msg)
     flavor = telepot.flavor(msg)
