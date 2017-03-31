@@ -77,6 +77,7 @@ def handle(msg):
         elif cmd == '/quote':
             output = str(ublydok.quote())
             bot.sendMessage(chat_id, output)
+            pass
         else:
             cmd = cmd.strip('/ ')
             output = l2onparser.parse(cmd)
