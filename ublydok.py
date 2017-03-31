@@ -12,6 +12,9 @@ target_dir   = 'backup' + os.sep + current_date
 
 DB = 'blacklist.json'
 
+
+
+
 def get_data(nickname):
     name = nickname.lower()
 
@@ -101,9 +104,12 @@ def exp_table(x=0, y=81):
     return output
 
 def quote():
+    t = time.time()
+    random.seed(t)
     lst = config.quotes
-    i = random.randint(0, len(lst)-1)
+    arr_len = len(lst)-1
+    i = random.randint(0, arr_len)
     return lst[i]
 
 if __name__ == '__main__':
-    print(exp_table())
+    print(quote())
