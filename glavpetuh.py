@@ -62,6 +62,18 @@ def handle(msg):
 
             output = sender + ', ' + ublydok.calculate_exp(lvl, percent)
             bot.sendMessage(chat_id, output)
+        elif cmd == '/exp':
+            try:
+                x = args[1]
+            except IndexError:
+                x = 0
+            try:
+                y = args[2]
+            except IndexError:
+                y = 81
+
+            output = ublydok.exp_table(x, y)
+            bot.sendMessage(chat_id, output)
         elif cmd == '/quote':
             output = str(ublydok.quote())
             bot.sendMessage(chat_id, output)
