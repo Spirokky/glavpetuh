@@ -23,6 +23,7 @@ help_msg = \
 /lvl <lvl> <процент> - опыт до повышения уровня
 """
 
+random.seed(time.time())
 def handle(msg):
     pprint(msg)
     flavor = telepot.flavor(msg)
@@ -75,7 +76,9 @@ def handle(msg):
             output = ublydok.exp_table(x, y)
             bot.sendMessage(chat_id, output)
         elif cmd == '/quote':
-            output = str(ublydok.quote())
+            starttime=time.time()
+            i=random.randint(1,len(quote))
+            output = str(ublydok.quote[i])
             bot.sendMessage(chat_id, output)
         else:
             cmd = cmd.strip('/ ')
