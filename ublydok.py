@@ -90,7 +90,7 @@ def calculate_exp(lvl, percent=None):
 def exp_table(x=0, y=81):
     x, y = int(x), int(y)
     rng = range(x, y+1)
-    output = ' {:>3} | {:^18} | {:^18} \n'.format('lvl', 'До повышения', 'Всего опыта')
+    output = '{:>3} | {:^18} | {:^18} \n'.format('lvl', 'До повышения', 'Всего опыта')
     table = config.levels
 
     for i in rng:
