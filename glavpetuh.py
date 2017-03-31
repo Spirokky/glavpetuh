@@ -76,11 +76,8 @@ def handle(msg):
             output = ublydok.exp_table(x, y)
             bot.sendMessage(chat_id, output)
         elif cmd == '/quote':
-            starttime=time.time()
-            i=random.randint(1,len(quote))
-            output = str(ublydok.quote[i])
+            output = str(ublydok.quote())
             bot.sendMessage(chat_id, output)
-            pass
         else:
             cmd = cmd.strip('/ ')
             output = l2onparser.parse(cmd)
