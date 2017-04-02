@@ -9,17 +9,6 @@ from pprint import pprint
 from bs4 import BeautifulSoup
 
 url = 'http://l2on.net'
-output = """\
-{name} {title}
-{prof} - {lvl}
-Max.HP: {maxhp}
-Max.MP: {maxmp}
-Клан: {clan}
-Замечен: {first_spotted}
-Обновлен: {last_spotted}
-
-Аммуниция:\n
-"""
 
 
 def is_valid(nickname):
@@ -33,7 +22,8 @@ def is_valid(nickname):
     if match:
         return 1
 
-def parse(nickname): 
+
+def parse(nickname):
     valid = is_valid(nickname)
 
     if valid == 0:
@@ -49,29 +39,23 @@ def parse(nickname):
               'type': 'char',
               'name': name}
 
-    req     = requests.get(url, params=values) # ConnectionError
-    soup    = BeautifulSoup(req.text, 'html.parser')
-    table   = soup.find_all('a', 'black', href=re.compile('id'))
+    req = requests.get(url, params=values)  # ConnectionError
+    soup = BeautifulSoup(req.text, 'html.parser')
+    table = soup.find_all('a', 'black', href=re.compile('id'))
     players = table[::2]
 
     player_url = None
 
     for i in players:
         if i.text.lower() == nickname.lower():
-            m          = re.search('id=[0-9]+', str(i))
-            start      = m.span()[0]
-            end        = m.span()[1]
-            player_id  = str(i)[start:end]
+            m = re.search('id=[0-9]+', str(i))
+            start = m.span()[0]
+            end = m.span()[1]
+            player_id = str(i)[start:end]
             player_url = 'http://l2on.net/?c=userdata&a=char&' + player_id
             break
-    
+
     if not player_url:
         return 'Ничего не найдено'
     else:
         return player_url
-
-#     req = requests.get(player_url)
-#     soup = BeautifulSoup(req, 'html.parser')
-    
-
-# parse('стригущийлишай')

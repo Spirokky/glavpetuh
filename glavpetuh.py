@@ -10,27 +10,32 @@ from pprint import pprint
 # ------ Magic for PythonAnywhere free account ------ 
 # proxy_url = "http://proxy.server:3128"
 # telepot.api._pools = {
-#     'default': urllib3.ProxyManager(proxy_url=proxy_url, num_pools=3, maxsize=10, retries=False, timeout=30),
+#     'default': urllib3.ProxyManager(proxy_url=proxy_url,
+#                                   num_pools=3, maxsize=10,
+#                                   retries=False, timeout=30),
 # }
-# telepot.api._onetime_pool_spec = (urllib3.ProxyManager, dict(proxy_url=proxy_url, num_pools=1, maxsize=1, retries=False, timeout=30))
+# telepot.api._onetime_pool_spec = (urllib3.ProxyManager,
+#                                   dict(proxy_url=proxy_url, num_pools=1,
+#                                   maxsize=1, retries=False, timeout=30))
 # ------ end of magic ------
 
 TOKEN = sys.argv[1]
-TRUSTED = [-188672102, # testdebug
-            303422193, # Spirokky's private
-           -167715634, # back to l2
-            123456789]
+TRUSTED = [-188672102,  # testdebug
+           303422193,   # Spirokky's private
+           -167715634,  # back to l2
+           123456789]
 
 bot = telepot.Bot(TOKEN)
 
 daddy = 'http://i.imgur.com/b8XZVvx.jpg'
 help_msg = \
-"""
+    """
 /who <nickname> - показать инфу об ублюдке
 /add <nickname> <описание> - добавить ублюдка
 /del <nickname> - убрать ублюдка
 /lvl <lvl> <процент> - опыт до повышения уровня
 """
+
 
 def handle(msg):
     pprint(msg)
@@ -41,9 +46,9 @@ def handle(msg):
         bot.sendMessage(chat_id, 'Недостаточно прав')
 
     command = msg['text'].split()
-    sender  = msg['from']['first_name']
-    cmd     = command[0]
-    args    = command[0::]
+    sender = msg['from']['first_name']
+    cmd = command[0]
+    args = command[0::]
 
     try:
         if cmd == '/help':
@@ -54,8 +59,8 @@ def handle(msg):
             output = ublydok.get_data(args[1])
             bot.sendMessage(chat_id, output)
         elif cmd == '/add':
-            name   = command[1]
-            descr  = ' '.join(command[2:])
+            name = command[1]
+            descr = ' '.join(command[2:])
             output = ublydok.add_data(name, descr)
             bot.sendMessage(chat_id, output)
         elif cmd == '/del':
@@ -92,6 +97,7 @@ def handle(msg):
             bot.sendMessage(chat_id, output)
     except IndexError:
         return None
+
 
 bot.message_loop(handle)
 pprint(bot.getMe())
