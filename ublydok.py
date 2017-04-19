@@ -96,13 +96,15 @@ def calculate_exp(lvl, percent=None):
 def exp_table(x=0, y=81):
     x, y = int(x), int(y)
     rng = range(x, y + 1)
-    output = '{:>3} | {:^18} | {:^18} \n'.format('lvl', 'До повышения', 'Всего опыта')
-    table = config.levels
+    output = ' *{:>3}  {:^18}  {:^18}*\n'.format('lvl', 
+                                                'До повышения', 
+                                                'Всего опыта')
+    table = config.levels   
 
     for i in rng:
         for k, v in table.items():
             if k == str(i):
-                output += '{:>3} | {:^18,} | {:^18,} \n'.format(i, v[1], v[0])
+                output += '{:>3} | {:^18,} | {:^18,}\n'.format(i, v[1], v[0])
 
     return output
 
