@@ -87,7 +87,7 @@ def handle(msg):
                 y = 81
 
             output = ublydok.exp_table(x, y)
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, parse_mode='Markdown')
         elif cmd == '/quote':
             output = str(ublydok.quote())
             bot.sendMessage(chat_id, output)
