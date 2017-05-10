@@ -109,7 +109,6 @@ def parse(nickname):
     for tag in player_values.tbody:
         try:
             player_values_dict[tag.th.string] = tag.td.text
-            # print(tag.th.string, '---', tag.td.text)
         except AttributeError:
             pass
 
@@ -118,17 +117,16 @@ def parse(nickname):
     output = OUTPUT.format(player_name, pvd['Уровень'],
                            player_comments_string, 
                            player_comments_link,
-                           pvd['Раса'],
-                           pvd['Класс'],
-                           pvd['Макс. HP'],
-                           pvd['Макс. MP'],
-                           pvd['Клан'],
-                           pvd['Альянс'],
-                           pvd['Замечен'],
-                           pvd['Обновлён'],
-                           pvd['Торговля'],)
-
+                           pvd.get('Раса', 'None'),
+                           pvd.get('Класс', 'None'),
+                           pvd.get('Макс. HP', 'None'),
+                           pvd.get('Макс. MP', 'None'),
+                           pvd.get('Клан', 'Без клана'),
+                           pvd.get('Альянс', 'Без альянса'),
+                           pvd.get('Замечен', 'Не замечен'),
+                           pvd.get('Обновлён', 'Не обновлен'),
+                           pvd.get('Торговля', 'Не торговал'),)
     return output
 
 if __name__ =='__main__':
-    pass
+    print(parse('штыркинсон'))
