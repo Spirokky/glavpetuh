@@ -58,6 +58,9 @@ def handle(msg):
         elif cmd == '/who':
             output = ublydok.get_data(args[1])
             bot.sendMessage(chat_id, output)
+        elif cmd == '/showall':
+            output = ublydok.get_data_all()
+            bot.sendMessage(chat_id, output)
         elif cmd == '/add':
             name = command[1]
             descr = ' '.join(command[2:])
