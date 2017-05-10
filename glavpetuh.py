@@ -94,7 +94,7 @@ def handle(msg):
         else:
             cmd = cmd.strip('/ ')
             output = l2onparser.parse(cmd)
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, parse_mode='Markdown', disable_web_page_preview=True)
     except IndexError:
         return None
 
