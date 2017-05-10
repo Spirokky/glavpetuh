@@ -32,6 +32,18 @@ def get_data(nickname):
         return res
 
 
+def get_data_all():
+    with open(DB, 'r', encoding='utf-8') as f:
+        json_data = json.load(f)
+        names_list = ''
+
+        for k in json_data:
+            names_list += k + '\n'
+
+    return names_list
+
+
+
 def backup(fname):
     if not os.path.exists(target_dir):
         os.makedirs(target_dir)
@@ -119,4 +131,4 @@ def quote():
 
 
 if __name__ == '__main__':
-    print(quote())
+    get_data_all()
