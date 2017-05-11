@@ -29,11 +29,23 @@ bot = telepot.Bot(TOKEN)
 
 daddy = 'http://i.imgur.com/b8XZVvx.jpg'
 help_msg = \
-    """
-/who <nickname> - показать инфу об ублюдке
-/add <nickname> <описание> - добавить ублюдка
-/del <nickname> - убрать ублюдка
-/lvl <lvl> <процент> - опыт до повышения уровня
+"""
+Доступные команды бота:
+
+`/help` - показать это сообщение
+
+*[Ублюдки]*
+`/who` _nick_ - показать ублюдка
+`/showall` - показать всех ублюдков
+`/add` _nick описание_ - добавить ублюдка в список
+`/del` _nick_ - удалить ублюдка из списка
+
+*[Эксп]*
+`/lvl` _уровень с процентом_ - показывает сколько опыта осталось до lvl-up
+`/exp` _start end_ - таблица опыта в выбранном диапазоне лвл-ов.
+
+*[Остальное]*
+`/quote` - цитаты великих людей
 """
 
 
@@ -52,7 +64,7 @@ def handle(msg):
 
     try:
         if cmd == '/help':
-            bot.sendMessage(chat_id, help_msg)
+            bot.sendMessage(chat_id, help_msg, parse_mode='Markdown')
         elif cmd == '/whoisyourdaddy':
             bot.sendPhoto(chat_id, daddy)
         elif cmd == '/who':
