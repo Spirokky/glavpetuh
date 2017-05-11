@@ -66,21 +66,21 @@ def handle(msg):
         if cmd == '/help':
             bot.sendMessage(chat_id, help_msg, parse_mode='Markdown')
         elif cmd == '/whoisyourdaddy':
-            bot.sendPhoto(chat_id, daddy)
+            bot.sendPhoto(chat_id, daddy, disable_notification=True)
         elif cmd == '/who':
             output = ublydok.get_data(args[1])
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, disable_notification=True)
         elif cmd == '/showall':
             output = ublydok.get_data_all()
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, disable_notification=True)
         elif cmd == '/add':
             name = command[1]
             descr = ' '.join(command[2:])
             output = ublydok.add_data(name, descr)
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, disable_notification=True)
         elif cmd == '/del':
             output = ublydok.delete_data(args[1])
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, disable_notification=True)
         elif cmd == '/lvl':
             lvl = args[1]
 
@@ -90,7 +90,7 @@ def handle(msg):
                 percent = None
 
             output = sender + ', ' + ublydok.calculate_exp(lvl, percent)
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, disable_notification=True)
         elif cmd == '/exp':
             try:
                 x = args[1]
@@ -102,14 +102,14 @@ def handle(msg):
                 y = 81
 
             output = ublydok.exp_table(x, y)
-            bot.sendMessage(chat_id, output, parse_mode='Markdown')
+            bot.sendMessage(chat_id, output, parse_mode='Markdown', disable_notification=True)
         elif cmd == '/quote':
             output = str(ublydok.quote())
-            bot.sendMessage(chat_id, output)
+            bot.sendMessage(chat_id, output, disable_notification=True)
         else:
             cmd = cmd.strip('/ ')
             output = l2onparser.parse(cmd)
-            bot.sendMessage(chat_id, output, parse_mode='Markdown', disable_web_page_preview=True)
+            bot.sendMessage(chat_id, output, parse_mode='Markdown', disable_web_page_preview=True, disable_notification=True)
     except IndexError:
         return None
 
