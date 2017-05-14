@@ -35,10 +35,12 @@ def get_data(nickname):
 def get_data_all():
     with open(DB, 'r', encoding='utf-8') as f:
         json_data = json.load(f)
+        values = json_data.values()
+        nicknames = [v.get('nickname') for v in values]
         names_list = ''
 
-        for k in json_data:
-            names_list += k + '\n'
+        for i in sorted(nicknames):
+            names_list += i + '\n'
 
     return names_list
 
@@ -131,4 +133,4 @@ def quote():
 
 
 if __name__ == '__main__':
-    get_data_all()
+    pass
