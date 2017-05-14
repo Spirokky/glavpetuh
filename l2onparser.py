@@ -9,6 +9,8 @@ from selenium import webdriver
 from pprint import pprint
 from bs4 import BeautifulSoup
 
+
+driver = webdriver.PhantomJS(executable_path="D:\Downloads\phantomjs-2.1.1-windows\\bin\\phantomjs.exe")
 url = 'http://l2on.net'
 OUTPUT = \
 """
@@ -93,7 +95,6 @@ def parse(nickname):
 
     # start
     # driver = webdriver.Firefox()
-    driver = webdriver.PhantomJS(executable_path="D:\Downloads\phantomjs-2.1.1-windows\\bin\\phantomjs.exe")
     driver.get(player_url)
     html = driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
@@ -129,4 +130,4 @@ def parse(nickname):
     return output
 
 if __name__ =='__main__':
-    print(parse('штыркинсон'))
+    pass
