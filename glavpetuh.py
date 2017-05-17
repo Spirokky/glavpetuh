@@ -28,6 +28,7 @@ TRUSTED = [-188672102,  # testdebug
 bot = telepot.Bot(TOKEN)
 
 daddy = 'http://i.imgur.com/b8XZVvx.jpg'
+map_loa = 'http://i.imgur.com/amfgSO4.jpg'
 help_msg = \
 """
 Доступные команды бота:
@@ -45,7 +46,9 @@ help_msg = \
 `/exp` _start end_ - таблица опыта в выбранном диапазоне лвл-ов.
 
 *[Остальное]*
+`/nickname` - поиск ника по l2on
 `/quote` - цитаты великих людей
+`/maploa` - карта LoA
 """
 
 
@@ -67,6 +70,8 @@ def handle(msg):
             bot.sendMessage(chat_id, help_msg, parse_mode='Markdown')
         elif cmd == '/whoisyourdaddy':
             bot.sendPhoto(chat_id, daddy, disable_notification=True)
+        elif cmd == '/maploa':
+            bot.sendPhoto(chat_id, map_loa, disable_notification=True)
         elif cmd == '/who':
             output = ublydok.get_data(args[1])
             bot.sendMessage(chat_id, output, disable_notification=True)
