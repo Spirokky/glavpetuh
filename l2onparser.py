@@ -14,7 +14,7 @@ driver = webdriver.PhantomJS(executable_path="D:\Downloads\phantomjs-2.1.1-windo
 url = 'http://l2on.net'
 OUTPUT = \
 """
-*{}*
+[{}]({})
 _{}_
 [{}]({})
 Раса: {}
@@ -115,8 +115,9 @@ def parse(nickname):
 
     pvd = clean_strings(player_values_dict) # dict of cleaned values
 
-    output = OUTPUT.format(player_name, pvd['Уровень'],
-                           player_comments_string, 
+    output = OUTPUT.format(player_name, player_url,
+                           pvd['Уровень'],
+                           player_comments_string,
                            player_comments_link,
                            pvd.get('Раса', 'None'),
                            pvd.get('Класс', 'None'),
