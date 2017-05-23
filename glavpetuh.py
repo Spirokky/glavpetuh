@@ -58,7 +58,7 @@ def handle(msg):
     chat_id = msg['chat']['id']
 
     if chat_id not in TRUSTED:
-        bot.sendMessage(chat_id, 'Недостаточно прав')
+        bot.sendMessage(chat_id, 'Пiшов нахуй!')
 
     command = msg['text'].split()
     sender = msg['from']['first_name']
