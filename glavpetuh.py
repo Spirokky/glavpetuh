@@ -22,8 +22,7 @@ from pprint import pprint
 TOKEN = sys.argv[1]
 TRUSTED = [-188672102,  # testdebug
            303422193,   # Spirokky's private
-           -167715634,  # back to l2
-           123456789]
+           -1001105947437,]  # back to l2 ]
 
 bot = telepot.Bot(TOKEN)
 
