@@ -2,4 +2,5 @@ env/
 backup/
 __pycache__/
 .idea
+twitter_stream.py
 *.log
