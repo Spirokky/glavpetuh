@@ -1,3 +1,8 @@
+access_token = ""
+access_token_secret = ""
+consumer_key = ""
+consumer_secret = ""
+
 levels = {
     '1': (0, 0),
     '2': (68, 68),
