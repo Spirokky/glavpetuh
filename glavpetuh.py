@@ -4,8 +4,19 @@ import sys
 import time
 import l2onparser
 import urllib3
+import json
+import config
 
+from tweepy import OAuthHandler
+from tweepy import Stream
+from twitter_stream import StdOutListener
 from pprint import pprint
+from tweepy.streaming import StreamListener
+from tweepy import OAuthHandler
+from tweepy import Stream
+from urllib.parse import unquote
+from urllib import request
+
 
 # ------ Magic for PythonAnywhere free account ------ 
 # proxy_url = "http://proxy.server:3128"
@@ -49,7 +60,6 @@ help_msg = \
 `/quote` - цитаты великих людей
 `/maploa` - карта LoA
 """
-
 
 def handle(msg):
     pprint(msg)
@@ -121,6 +131,32 @@ def handle(msg):
 
 bot.message_loop(handle)
 pprint(bot.getMe())
+
+
+#Variables that contains the user credentials to access Twitter API 
+access_token = config.access_token
+access_token_secret = config.access_token_secret
+consumer_key = config.consumer_key
+consumer_secret = config.consumer_secret
+
+class StdOutListener(StreamListener):
+
+    def on_data(self, data):
+        try:
+            tweet = json.loads(data)
+            bot.sendMessage(-188672102, tweet['text'])
+        except BaseException as e:
+            print(str(e))
+        return True
+
+    def on_error(self, status):
+        print('Error:', status)
+
+twitter_listener = StdOutListener()
+auth = OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+stream = Stream(auth, twitter_listener)
+tweet_msg = stream.filter(follow=["2849516458"])
 
 while 1:
     time.sleep(10)
