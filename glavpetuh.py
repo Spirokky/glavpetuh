@@ -9,7 +9,6 @@ import config
 
 from tweepy import OAuthHandler
 from tweepy import Stream
-from twitter_stream import StdOutListener
 from pprint import pprint
 from tweepy.streaming import StreamListener
 from tweepy import OAuthHandler
