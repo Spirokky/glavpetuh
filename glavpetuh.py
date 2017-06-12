@@ -6,6 +6,7 @@ import l2onparser
 import urllib3
 import json
 import config
+import twitter_keys
 
 from tweepy import OAuthHandler
 from tweepy import Stream
@@ -133,10 +134,10 @@ pprint(bot.getMe())
 
 
 #Variables that contains the user credentials to access Twitter API 
-access_token = config.access_token
-access_token_secret = config.access_token_secret
-consumer_key = config.consumer_key
-consumer_secret = config.consumer_secret
+access_token = twitter_keys.access_token
+access_token_secret = twitter_keys.access_token_secret
+consumer_key = twitter_keys.consumer_key
+consumer_secret = twitter_keys.consumer_secret
 
 class StdOutListener(StreamListener):
 
