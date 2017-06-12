@@ -143,7 +143,10 @@ class StdOutListener(StreamListener):
     def on_data(self, data):
         try:
             tweet = json.loads(data)
-            bot.sendMessage(-188672102, tweet['text'])
+            if tweet['user']['id'] == 2849516458:
+                bot.sendMessage(-1001105947437, tweet['text'])
+            else:
+                return False
         except BaseException as e:
             print(str(e))
         return True
