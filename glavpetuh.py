@@ -6,14 +6,8 @@ import l2onparser
 import urllib3
 import json
 import config
-import twitter_keys
 
-from tweepy import OAuthHandler
-from tweepy import Stream
 from pprint import pprint
-from tweepy.streaming import StreamListener
-from tweepy import OAuthHandler
-from tweepy import Stream
 from urllib.parse import unquote
 from urllib import request
 
@@ -130,36 +124,8 @@ def handle(msg):
 
 
 bot.message_loop(handle)
+print("Connecting to telegram servers...")
 pprint(bot.getMe())
-
-
-#Variables that contains the user credentials to access Twitter API 
-access_token = twitter_keys.access_token
-access_token_secret = twitter_keys.access_token_secret
-consumer_key = twitter_keys.consumer_key
-consumer_secret = twitter_keys.consumer_secret
-
-class StdOutListener(StreamListener):
-
-    def on_data(self, data):
-        try:
-            tweet = json.loads(data)
-            if tweet['user']['id'] == 2849516458:
-                bot.sendMessage(-1001105947437, tweet['text'])
-            else:
-                return False
-        except BaseException as e:
-            print(str(e))
-        return True
-
-    def on_error(self, status):
-        print('Error:', status)
-
-twitter_listener = StdOutListener()
-auth = OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_token_secret)
-stream = Stream(auth, twitter_listener)
-tweet_msg = stream.filter(follow=["2849516458"])
 
 while 1:
     time.sleep(10)
