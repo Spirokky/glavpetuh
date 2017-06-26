@@ -72,6 +72,8 @@ def handle(msg):
     try:
         if cmd == '/help':
             bot.sendMessage(chat_id, help_msg, parse_mode='Markdown')
+        elif cmd == '/ping':
+            bot.sendMessage(chat_id, 'Курлык!', disable_notification=True)
         elif cmd == '/whoisyourdaddy':
             bot.sendPhoto(chat_id, daddy, disable_notification=True)
         elif cmd == '/maploa':
