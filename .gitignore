@@ -2,6 +2,7 @@ env/
 backup/
 __pycache__/
 .idea
+phantomjs*
 twitter_keys.py
 twitter_stream.py
 *.log
