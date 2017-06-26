@@ -10,7 +10,8 @@ from pprint import pprint
 from bs4 import BeautifulSoup
 
 
-driver = webdriver.PhantomJS(executable_path="D:\Downloads\phantomjs-2.1.1-windows\\bin\\phantomjs.exe")
+#driver = webdriver.PhantomJS(executable_path="D:\Downloads\phantomjs-2.1.1-windows\\bin\\phantomjs.exe")
+driver = webdriver.PhantomJS(executable_path="phantomjs-2.1.1-linux-x86_64/bin/phantomjs")
 url = 'http://l2on.net'
 OUTPUT = \
 """
