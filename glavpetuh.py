@@ -110,7 +110,7 @@ def handle(msg):
             try:
                 y = args[2]
             except IndexError:
-                y = 81
+                y = 85
 
             output = ublydok.exp_table(x, y)
             bot.sendMessage(chat_id, output, parse_mode='Markdown', disable_notification=True)
