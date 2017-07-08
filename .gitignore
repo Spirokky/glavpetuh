@@ -6,3 +6,4 @@ phantomjs*
 twitter_keys.py
 twitter_stream.py
 *.log
+.pyc
