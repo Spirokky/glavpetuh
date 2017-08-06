@@ -4,7 +4,5 @@ __pycache__/
 .idea
 phantomjs*
 core/secrets.py
-twitter_keys.py
-twitter_stream.py
 *.log
 .pyc
