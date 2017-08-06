@@ -3,6 +3,6 @@ backup/
 __pycache__/
 .idea
 phantomjs*
-core/secrets.py
+secrets.py
 *.log
 .pyc
