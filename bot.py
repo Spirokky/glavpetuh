@@ -1,16 +1,31 @@
-from telegram.ext import Updater
-from core import secrets
-
+from telegram.ext import Updater, CommandHandler
 import logging
+import secrets
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
-
-updater = Updater(token=secrets.TOKEN)
-
-dp = updater.dispatcher
+logger = logging.getLogger(__name__)
 
 
+def help(bot, update):
+    update.message.reply_text('Help!')
 
-def start(bot, update):
-    bot.send_message(chat_id=update.message.chat_id, text='wanna talk someshit?')
+
+def error(bot, update, error):
+    logger.warning('Update "%s" caused error "%s"' % (update, error))
+
+
+def main():
+    updater = Updater(secrets.TOKEN)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler("help", help))
+
+    dp.add_error_handler(error)
+
+    updater.start_polling()
+    updater.idle()
+
+
+if __name__ == '__main__':
+    main()
