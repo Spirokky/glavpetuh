@@ -9,7 +9,16 @@ phantomjs*
 # --- .py ----
 *.pyc
 secrets.py
+testdb.py
+
+
+# --- executions ---
+*.exe
 
 
 # --- logs ---
 *.log
+
+
+# --- databases ---
+*.db
