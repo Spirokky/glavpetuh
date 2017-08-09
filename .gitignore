@@ -1,9 +1,11 @@
 env/
 backup/
+core/
 __pycache__/
 .idea
 phantomjs*
 twitter_keys.py
 twitter_stream.py
 *.log
+*.exe
 .pyc
