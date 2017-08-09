@@ -1,22 +1,38 @@
 import unittest
 
-from core import quotes
+from core.quotes import Quote
 
 
 class TestQuotes(unittest.TestCase):
 
-    def test_quote_get(self):
-        data = quotes.quote_get()
-        self.assertTrue(type(data), tuple)
+    def setUp(self):
+        self.q = Quote('core/testing_database.db')
 
-    def test_quote_get_with_id(self):
-        data = quotes.quote_get(1)
-        expecting = (1, 'Нам деньги-то не очень нужны (C) Натаха')
-        self.assertEqual(data, expecting)
+    def tearDown(self):
+        self.q.connect.rollback()
+        self.q.connect.close()
 
-    def test_quote_get_is_not_none(self):
-        data = quotes.quote_get()
-        self.assertIsNotNone(data)
+    def test_get(self):
+        self.assertTupleEqual(self.q.get(3), (3, 'Все дороги ведут к людям.'))
+        self.assertIsNotNone(self.q.get(1))
+
+    def test_get_with_no_id(self):
+        with self.assertRaises(ValueError):
+            self.q.get(False)
+            self.q.get()
+
+    def test_get_with_str(self):
+        self.assertTupleEqual(self.q.get("3"), (3, 'Все дороги ведут к людям.'))
+        with self.assertRaises(ValueError):
+            self.q.get("string")
+
+    def test_getrandom(self):
+        self.assertTrue(type(self.q.getrandom()), tuple)
+        self.assertIsNotNone(self.q.getrandom())
+
+    def test_getrandom_with_args(self):
+        with self.assertRaises(TypeError):
+            self.q.getrandom(123)
 
 
 if __name__ == "__main__":
