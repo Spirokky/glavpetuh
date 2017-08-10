@@ -1,4 +1,4 @@
-# --- dir ---
+# dir
 env
 backup
 __pycache__
@@ -6,19 +6,19 @@ __pycache__
 phantomjs*
 
 
-# --- .py ----
-*.pyc
-secrets.py
+# .py
+*.py[cod]
 testdb.py
+secrets.py
 
 
-# --- executions ---
+# executions
 *.exe
 
 
-# --- logs ---
+# logs
 *.log
 
 
-# --- databases ---
+# databases
 *.db
