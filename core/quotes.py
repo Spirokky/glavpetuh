@@ -23,76 +23,62 @@ class Quote(object):
 
         self.connect.commit()
 
-    def get(self, id):
-        if not id:
-            raise ValueError('id must be integer')
-        else:
-            try:
-                id = int(id)
-            except ValueError as e:
-                raise e
-
-        data = None
-
-        try:
+    def get(self, id=None, all=False):
+        if all:
             with self.connect:
-                self.cursor.execute("SELECT id, text FROM quotes WHERE Id = (?);", (id,))
-                data = self.cursor.fetchone()
-        except Exception as e:
-            logger.warning("Trying to get quote caused an '%s'" % (e))
-            self.connect.rollback()
-
-        return data
+                self.cursor.execute("SELECT * FROM quotes ;")
+                data = self.cursor.fetchall()
+            return data
+        else:
+            if not id:
+                with self.connect:
+                    self.cursor.execute("SELECT id, text FROM quotes WHERE id = (SELECT MAX(id)  FROM quotes);")
+                    data = self.cursor.fetchone()
+                return data
+            else:
+                try:
+                    id = (int(id))
+                except ValueError as e:
+                    raise e
+                with self.connect:
+                    self.cursor.execute("SELECT id, text FROM quotes WHERE Id = (?);", (id,))
+                    data = self.cursor.fetchone()
+                return data
 
     def getrandom(self):
-        data = None
-
-        try:
-            with self.connect:
-                self.cursor.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1;")
-                data = self.cursor.fetchone()
-        except Exception as e:
-            logger.warning("Trying to get random quote caused an '%s'" % (e))
-            self.connect.rollback()
+        with self.connect:
+            self.cursor.execute("SELECT * FROM quotes ORDER BY RANDOM() LIMIT 1;")
+            data = self.cursor.fetchone()
 
         return data
 
     def add(self, quote):
-        new_quote = None
-
-        try:
-            with self.connect:
-                self.cursor.execute("INSERT INTO quotes(text) VALUES (?);", (quote,))
-                lid = self.cursor.lastrowid
-                new_quote = self.cursor.execute("SELECT id, text FROM quotes WHERE Id = (?);", (lid,))
-        except Exception as e:
-            logger.warning("Trying to add quote caused an '%s'" % (e))
-            self.connect.rollback()
+        with self.connect:
+            self.cursor.execute("INSERT INTO quotes(text) VALUES (?);", (quote,))
+            lid = self.cursor.lastrowid
+            self.cursor.execute("SELECT id, text FROM quotes WHERE id = (?);", (lid,))
+            new_quote = self.cursor.fetchone()
 
         return new_quote
 
-    def remove(self, id):
+    def remove(self, id=None):
         if not id:
-            raise ValueError('id must be integer')
+            self.cursor.execute("SELECT id FROM quotes WHERE id = (SELECT MAX(id)  FROM quotes);")
+            id = self.cursor.fetchone()
         else:
             try:
-                id = int(id)
+                id = (int(id),)
             except ValueError as e:
                 raise e
 
-        target = None
-
-        try:
-            with self.connect:
-                self.cursor.execute("SELECT Id, text FROM quotes WHERE Id = (?);", (id,))
-                target = self.cursor.fetchone()
-                self.cursor.execute("DELETE FROM quotes WHERE Id = (SELECT MAX(Id) FROM quotes);")
-        except Exception as e:
-            logger.warning("Cannot remove quote '%s' cause '%s'" % (id, e))
-            self.connect.rollback()
+        with self.connect:
+            self.cursor.execute("SELECT id, text FROM quotes WHERE id = (?);", id)
+            target = self.cursor.fetchone()
+            self.cursor.execute("DELETE FROM quotes WHERE id = (?);", id)
 
         return target
 
 
 if __name__ == '__main__':
     q = Quote('testing_database.db')
+    print(q.get(all=True))
