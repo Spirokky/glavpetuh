@@ -1,10 +1,8 @@
 from telegram.ext import Updater, CommandHandler
 from functools import wraps
-from pprint import pprint
 
 import logging
 import secrets
-
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -26,6 +24,10 @@ def restricted(func):
     return wrapped
 
 
+def error(bot, update, error):
+    logger.warning('Update "%s" caused error "%s"' % (update, error))
+
+
 def help(bot, update):
     pass
 
@@ -34,8 +36,16 @@ def showid(bot, update):
     update.message.reply_text(update.effective_user.id)
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"' % (update, error))
+def quote(bot, update):
+    pass
+
+
+def quoteadd(bot, update):
+    pass
+
+
+def quoteremove(bot, update):
+    pass
 
 
 def main():
