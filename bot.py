@@ -31,7 +31,8 @@ def error(bot, update, error):
 
 
 def help(bot, update):
-    update.message.reply_text(config.help_msg)
+    # bot.send_message(parse_mode='Markdown', chat_id=update.message.chat, text=config.help_msg)
+    update.message.reply_text(config.help_msg, parse_mode="Markdown")
 
 
 def showid(bot, update):
