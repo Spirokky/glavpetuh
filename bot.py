@@ -2,7 +2,6 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from functools import wraps
 from core.quotes import Quote
 
-import telegram
 import logging
 import secrets
 import config
