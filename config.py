@@ -24,7 +24,13 @@ help_msg = """
 */maploa* - карта LoA
 """
 
-LIST_OF_ACCESS = [303422193]
+LIST_OF_ACCESS = [303422193,  # Spirokky
+                 ]
+
+LIST_OF_GROUPS = [-1001105947437,  # back to l2
+                  -188672102,  # testdebug
+                  303422193,  #  Spirokky's private
+                 ]
 
 levels = {
     '1': (0, 0),
