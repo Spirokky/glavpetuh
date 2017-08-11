@@ -1,7 +1,8 @@
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from functools import wraps
 from core.quotes import Quote
 
+import telegram
 import logging
 import secrets
 import config
@@ -16,10 +17,32 @@ def restricted(func):
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
         user_id = update.effective_user.id
+        username = update.effective_user.username
         if user_id not in config.LIST_OF_ACCESS:
-            print("Unauthorized access denied for {}.".format(user_id))
-            update.message.reply_text('Недостаточно прав.')
+            print("Access denied for {} [{}]".format(username, user_id))
+            update.message.reply_text('Пiшов нахуй!', quote=False)
             return
+        return func(bot, update, *args, **kwargs)
+    return wrapped
+
+
+def restricted_to_chats(func):
+    @wraps(func)
+    def wrapped(bot, update, *args, **kwargs):
+        chat_id = update.effective_chat.id
+        chat_name = update.effective_chat.title
+        if chat_id not in config.LIST_OF_GROUPS:
+            print("Access denied for {} [{}]".format(chat_name, chat_id))
+            update.message.reply_text('Пiшов нахуй!', quote=False)
+            return
+        return func(bot, update, *args, **kwargs)
+    return wrapped
+
+
+def update_logger(func):
+    @wraps(func)
+    def wrapped(bot, update, *args, **kwargs):
+        print(update)
         return func(bot, update, *args, **kwargs)
     return wrapped
 
@@ -28,20 +51,27 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
 
 
+@update_logger
+@restricted_to_chats
 def help(bot, update):
-    # bot.send_message(parse_mode='Markdown', chat_id=update.message.chat, text=config.help_msg)
-    update.message.reply_text(config.help_msg, parse_mode="Markdown")
+    update.message.reply_text(config.help_msg, parse_mode="Markdown", quote=False)
 
 
-def showid(bot, update):
-    update.message.reply_text(update.effective_user.id)
+@update_logger
+def myid(bot, update):
+    user = update.effective_user.first_name
+    user_id = update.effective_user.id
+    update.message.reply_text("{}, {}".format(user, user_id), quote=False)
 
 
-def test(bot, update, args):
-    s = update.message.text
-    update.message.reply_text('got: {} \nargs: {}'.format(s, args))
+@update_logger
+def ping(bot, update):
+    update.message.reply_text('Dev!', quote=False)
 
 
+@restricted
+@restricted_to_chats
+@update_logger
 def quote_get(bot, update, args):
     quote = Quote('core/database.db')
 
@@ -56,17 +86,19 @@ def quote_get(bot, update, args):
             id, text = item[0], item[1]
             res += "{}. {}\n".format(id, text)
 
-        update.message.reply_text(res)
+        update.message.reply_text(res, quote=False)
         return
     else:
         query = quote.get(args[0])
 
     id, text = query[0], query[1]
     reply = "{}. {}".format(id, text)
-    update.message.reply_text(reply)
+    update.message.reply_text(reply, quote=False)
 
 
 @restricted
+@restricted_to_chats
+@update_logger
 def quote_add(bot, update, args):
     quote = Quote('core/database.db')
     data = " ".join(args)
@@ -77,13 +109,15 @@ def quote_add(bot, update, args):
     try:
         res = quote.add(data)
         id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} добавлена:\n{}".format(id, text))
+        update.message.reply_text("Цитата № {} добавлена:\n{}".format(id, text), quote=False)
     except Exception as e:
-        update.message.reply_text("Не удалось добавить цитату: '%s'" % (e))
+        update.message.reply_text("Не удалось добавить цитату: '%s'" % (e), quote=False)
         return
 
 
 @restricted
+@restricted_to_chats
+@update_logger
 def quote_remove(bot, update, args):
     quote = Quote('core/database.db')
 
@@ -95,22 +129,30 @@ def quote_remove(bot, update, args):
     try:
         res = quote.remove(id)
         id , text = res[0], res[1]
-        update.message.reply_text("Цитата № {} удалена:\n{}".format(id, text))
+        update.message.reply_text("Цитата № {} удалена:\n{}".format(id, text), quote=False)
         return
     except Exception as e:
-        update.message.reply_text("Не удалось удалить цитату: '%s'" % (e))
+        update.message.reply_text("Не удалось удалить цитату: '%s'" % (e), quote=False)
+
+
+@update_logger
+def test(bot, update, args, chat_data):
+    print(update)
+
 
 
 def main():
     updater = Updater(secrets.TOKEN)
     dp = updater.dispatcher
 
+    dp.add_handler(CommandHandler('ping', ping))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler('showid', showid))
+    dp.add_handler(CommandHandler('myid', myid))
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
-    dp.add_handler(CommandHandler('test', test, pass_args=True))
+    dp.add_handler(CommandHandler('test', test, pass_args=True, pass_chat_data=True))
+    dp.add_handler(MessageHandler(Filters.text, test, pass_chat_data=True))
 
     dp.add_error_handler(error)
 
@@ -119,4 +161,5 @@ def main():
 
 
 if __name__ == '__main__':
+    print('Working...')
     main()
