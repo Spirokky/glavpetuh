@@ -3,19 +3,26 @@ import config
 
 class Exp(object):
 
-    LEVELS = config.levels
-
     def __init__(self):
-        pass
+        self.levels = config.levels
 
     def next_level(self, lvl, percent=None):
-        nextlvl = str(int(lvl) + 1)
+        if lvl <= 0:
+            return "Минимальный уровень: 1"
+
+        if lvl > 85:
+            return 'Максимальный уровень: 85'
+
+        if lvl == 85:
+            nextlvl = '85'
+        else:
+            nextlvl = str(int(lvl) + 1)
 
         if percent:
             x = 100 - float(percent)
-            res = round(int(config.levels[nextlvl][1]) * x / 100)
+            res = round(int(self.levels[nextlvl][1]) * x / 100)
         else:
-            res = config.levels[nextlvl][1]
+            res = self.levels[nextlvl][1]
 
         output = 'Опыта до lvl-up: {:,}'
         return output.format(res)
@@ -41,6 +48,4 @@ def exp_table(x=0, y=81):
 
 if __name__ == "__main__":
     exp = Exp()
-    print(exp.next_level(23, 50))
-    print(exp.next_level(23))
-    print(exp.next_level(0))
+    print(exp.next_level(85, 50))
