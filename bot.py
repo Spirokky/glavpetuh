@@ -6,6 +6,7 @@ from core.exp import Exp
 import logging
 import secrets
 import config
+import datetime
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -42,7 +43,10 @@ def restricted_to_chats(func):
 def update_logger(func):
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
-        print(update)
+        now = datetime.datetime.now()
+        now = now.strftime('%A, %d. %B %Y %X')
+        res = '{}\n[{}]\n{}\n'.format('-'*80, now, update)
+        print(res)
         return func(bot, update, *args, **kwargs)
     return wrapped
 
