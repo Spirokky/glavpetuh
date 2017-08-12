@@ -1,6 +1,7 @@
 import unittest
 
 from core.quotes import Quote
+from core.exp import Exp
 
 
 class TestQuotes(unittest.TestCase):
@@ -46,6 +47,41 @@ class TestQuotes(unittest.TestCase):
             self.q.add(False)
 
     def test_remove(self):
+        pass
+
+
+class TestExp(unittest.TestCase):
+
+    def setUp(self):
+        self.exp = Exp()
+
+    def test_next_level(self):
+        self.assertEqual(self.exp.next_level(24, 5), 'Опыта до lvl-up: 714,186')
+        self.assertEqual(self.exp.next_level(24), 'Опыта до lvl-up: 751,775')
+        self.assertEqual(self.exp.next_level(1), 'Опыта до lvl-up: 68')
+        self.assertEqual(self.exp.next_level(1, 24.76), 'Опыта до lvl-up: 51')
+        self.assertEqual(self.exp.next_level(80), 'Опыта до lvl-up: 111,669,655,790')
+
+    def test_next_level_with_long_percent(self):
+        self.assertEqual(self.exp.next_level(56, 6.857463535465757), 'Опыта до lvl-up: 71,090,320')
+        self.assertEqual(self.exp.next_level(1, 0.1384591209475), 'Опыта до lvl-up: 68')
+
+    def test_next_level_with_zero_lvl(self):
+        self.assertEqual(self.exp.next_level(0), "Минимальный уровень: 1")
+        self.assertEqual(self.exp.next_level(0, 50), "Минимальный уровень: 1")
+
+    def test_next_level_with_zero_percent(self):
+        self.assertEqual(self.exp.next_level(76, 0), 'Опыта до lvl-up: 1,175,470,061')
+
+    def test_next_level_with_big_lvl(self):
+        max_lvl = 85
+        self.assertEqual(self.exp.next_level(156), 'Максимальный уровень: %s' % max_lvl)
+
+    def test_next_level_with_max_lvl(self):
+        self.assertEqual(self.exp.next_level(85), 'Опыта до lvl-up: 273,117,371,391')
+        self.assertEqual(self.exp.next_level(85, 50),'Опыта до lvl-up: 136,558,685,696')
+
+    def test_exp_table(self):
         pass
 
 
