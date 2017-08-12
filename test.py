@@ -81,6 +81,9 @@ class TestExp(unittest.TestCase):
         self.assertEqual(self.exp.next_level(85), 'Опыта до lvl-up: 273,117,371,391')
         self.assertEqual(self.exp.next_level(85, 50),'Опыта до lvl-up: 136,558,685,696')
 
+    def test_next_level_with_over_hundred_percent(self):
+        self.assertEqual(self.exp.next_level(45, 234), 'Больной ублюдок')
+
     def test_exp_table(self):
         pass
 
