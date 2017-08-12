@@ -1,6 +1,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from functools import wraps
 from core.quotes import Quote
+from core.exp import Exp
 
 import logging
 import secrets
@@ -135,6 +136,23 @@ def quote_remove(bot, update, args):
 
 
 @update_logger
+def next_level(bot, update, args):
+    if len(args) == 0:
+        update.message.reply_text('Какой левел, ущербный?', quote=False)
+        return
+    elif len(args) >= 2:
+        lvl, percent = args[0], args[1]
+    else:
+        lvl, percent = args[0], None
+
+    exp = Exp()
+    user = update.effective_user.first_name
+    res = exp.next_level(lvl, percent)
+    output = '{}, {}'
+    update.message.reply_text(output.format(user, res), quote=False)
+
+
+@update_logger
 def test(bot, update, args, chat_data):
     print(update)
 
@@ -150,6 +168,7 @@ def main():
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
+    dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('test', test, pass_args=True, pass_chat_data=True))
     dp.add_handler(MessageHandler(Filters.text, test, pass_chat_data=True))
 
