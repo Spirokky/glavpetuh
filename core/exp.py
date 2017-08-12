@@ -7,14 +7,14 @@ class Exp(object):
         self.levels = config.levels
 
     def next_level(self, lvl, percent=None):
-        if lvl <= 0:
+        if int(lvl) <= 0:
             return "Минимальный уровень: 1"
 
-        if lvl > 85:
+        if int(lvl) > 85:
             return 'Максимальный уровень: 85'
 
-        if lvl == 85:
-            nextlvl = '85'
+        if int(lvl) == 85:
+            nextlvl = 85
         else:
             nextlvl = str(int(lvl) + 1)
 
