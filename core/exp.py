@@ -19,8 +19,11 @@ class Exp(object):
             nextlvl = str(int(lvl) + 1)
 
         if percent:
-            x = 100 - float(percent)
-            res = round(int(self.levels[nextlvl][1]) * x / 100)
+            if int(percent) > 100:
+                return 'Больной ублюдок'
+            else:
+                x = 100 - float(percent)
+                res = round(int(self.levels[nextlvl][1]) * x / 100)
         else:
             res = self.levels[nextlvl][1]
 
