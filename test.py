@@ -74,8 +74,7 @@ class TestExp(unittest.TestCase):
         self.assertEqual(self.exp.next_level(76, 0), 'Опыта до lvl-up: 1,175,470,061')
 
     def test_next_level_with_big_lvl(self):
-        max_lvl = 85
-        self.assertEqual(self.exp.next_level(156), 'Максимальный уровень: %s' % max_lvl)
+        self.assertEqual(self.exp.next_level(156), 'Максимальный уровень: %s' % 85)
 
     def test_next_level_with_max_lvl(self):
         self.assertEqual(self.exp.next_level(85), 'Опыта до lvl-up: 273,117,371,391')
@@ -84,8 +83,15 @@ class TestExp(unittest.TestCase):
     def test_next_level_with_over_hundred_percent(self):
         self.assertEqual(self.exp.next_level(45, 234), 'Больной ублюдок')
 
-    def test_exp_table(self):
-        pass
+    def test_exp_table_with_negative_start(self):
+        self.assertEqual(self.exp.exp_table(-5, 3), self.exp.exp_table(1, 3))
+
+    def test_exp_table_with_negative_end(self):
+        self.assertEqual(self.exp.exp_table(80, -85), self.exp.exp_table(80))
+        self.assertEqual(self.exp.exp_table(34, -40), self.exp.exp_table(34, 40))
+
+    def test_exp_table_with_start_bigger_than_end(self):
+        self.assertEqual(self.exp.exp_table(80, 56), 'НАЧАЛО должно быть меньше КОНЦА')
 
 
 if __name__ == "__main__":
