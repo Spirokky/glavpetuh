@@ -14,7 +14,7 @@ class Exp(object):
             return 'Максимальный уровень: 85'
 
         if int(lvl) == 85:
-            nextlvl = 85
+            nextlvl = '85'
         else:
             nextlvl = str(int(lvl) + 1)
 
