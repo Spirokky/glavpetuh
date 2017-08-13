@@ -31,12 +31,22 @@ class Exp(object):
         return output.format(res)
 
     def exp_table(self, start=1, end=85):
-        start, end = int(start), int(end)
+        start, end = int(start), abs(int(end))
+
+        if start > end:
+            return 'НАЧАЛО должно быть меньше КОНЦА'
+
+        if start < 1:
+            start = 1
+
+        if end > 85:
+            end = 85
+
         rng = range(start, end + 1)
         output = ' *{:>3}  {:^18}  {:^18}*\n'.format('lvl',
                                                      'До повышения',
                                                      'Всего опыта')
-        table = config.levels
+        table = self.levels
 
         for i in rng:
             for k, v in table.items():
@@ -48,4 +58,4 @@ class Exp(object):
 
 if __name__ == "__main__":
     exp = Exp()
-    print(exp.exp_table())
+    print(exp.exp_table(80, -34))
