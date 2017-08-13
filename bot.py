@@ -157,6 +157,20 @@ def next_level(bot, update, args):
 
 
 @update_logger
+def exp_table(bot, update, args):
+    exp = Exp()
+
+    if len(args) == 0:
+        update.message.reply_text(exp.exp_table(), quote=False, parse_mode="Markdown")
+    elif len(args) >= 2:
+        start, end = args[0], args[1]
+        update.message.reply_text(exp.exp_table(start, end), quote=False, parse_mode="Markdown")
+    else:
+        start = args[0]
+        update.message.reply_text(exp.exp_table(start), quote=False, parse_mode="Markdown")
+
+
+@update_logger
 def test(bot, update):
     cmd = update.message.text.strip('/')
     update.message.reply_text('command filter\ncmd: "%s"' % cmd)
@@ -173,6 +187,7 @@ def main():
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
+    dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
     dp.add_handler(MessageHandler(Filters.command, test))
 
     dp.add_error_handler(error)
