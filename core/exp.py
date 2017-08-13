@@ -31,24 +31,21 @@ class Exp(object):
         return output.format(res)
 
     def exp_table(self, start=1, end=85):
-        pass
+        start, end = int(start), int(end)
+        rng = range(start, end + 1)
+        output = ' *{:>3}  {:^18}  {:^18}*\n'.format('lvl',
+                                                     'До повышения',
+                                                     'Всего опыта')
+        table = config.levels
 
+        for i in rng:
+            for k, v in table.items():
+                if k == str(i):
+                    output += '{:>3} | {:^18,} | {:^18,}\n'.format(i, v[1],
+                                                                   v[0])
+        return output
 
-def exp_table(x=0, y=81):
-    x, y = int(x), int(y)
-    rng = range(x, y + 1)
-    output = ' *{:>3}  {:^18}  {:^18}*\n'.format('lvl',
-                                                'До повышения',
-                                                'Всего опыта')
-    table = config.levels
-
-    for i in rng:
-        for k, v in table.items():
-            if k == str(i):
-                output += '{:>3} | {:^18,} | {:^18,}\n'.format(i, v[1], v[0])
-
-    return output
 
 if __name__ == "__main__":
     exp = Exp()
-    print(exp.next_level(85, 50))
+    print(exp.exp_table())
