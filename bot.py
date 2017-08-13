@@ -157,9 +157,9 @@ def next_level(bot, update, args):
 
 
 @update_logger
-def test(bot, update, args, chat_data):
-    print(update)
-
+def test(bot, update):
+    cmd = update.message.text.strip('/')
+    update.message.reply_text('command filter\ncmd: "%s"' % cmd)
 
 
 def main():
@@ -173,8 +173,7 @@ def main():
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
-    dp.add_handler(CommandHandler('test', test, pass_args=True, pass_chat_data=True))
-    dp.add_handler(MessageHandler(Filters.text, test, pass_chat_data=True))
+    dp.add_handler(MessageHandler(Filters.command, test))
 
     dp.add_error_handler(error)
 
