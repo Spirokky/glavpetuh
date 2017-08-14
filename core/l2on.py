@@ -58,6 +58,9 @@ class Player(object):
             return 3
 
     def parser(self):
+        if not self.nickname:
+            return False
+
         valid = self.nickname_validator()
 
         if valid == 1:

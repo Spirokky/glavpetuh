@@ -2,6 +2,7 @@ import unittest
 
 from core.quotes import Quote
 from core.exp import Exp
+from core.l2on import Player
 
 
 class TestQuotes(unittest.TestCase):
@@ -92,6 +93,23 @@ class TestExp(unittest.TestCase):
 
     def test_exp_table_with_start_bigger_than_end(self):
         self.assertEqual(self.exp.exp_table(80, 56), 'НАЧАЛО должно быть меньше КОНЦА')
+
+
+class TestL2onPlayerParser(unittest.TestCase):
+
+    def setUp(self):
+        self.p_empty = Player('')
+        self.p_invalid = Player('#@$!.,/')
+        self.p_slash = Player('/')
+
+    def test_player_parser_empty_str(self):
+        self.assertFalse(self.p_empty.parser())
+
+    def test_player_parser_invalid(self):
+        self.assertEqual(self.p_invalid.parser(), 'Невалидное имя')
+
+    def test_player_parser_slash(self):
+        self.assertEqual(self.p_slash.parser(), 'Невалидное имя')
 
 
 if __name__ == "__main__":
