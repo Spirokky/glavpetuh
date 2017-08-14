@@ -26,9 +26,11 @@ LIST_OF_ACCESS = [303422193,  # Spirokky
                  ]
 
 LIST_OF_GROUPS = [-1001105947437,  # back to l2
-                  -188672102,  # testdebug
-                  303422193,  #  Spirokky's private
+                  -188672102,      # testdebug
+                  303422193,       # Spirokky's private
                  ]
+
+webdriver_path = "D:\Downloads\phantomjs-2.1.1-windows\\bin\phantomjs.exe"
 
 levels = {
     '1': (0, 0),
