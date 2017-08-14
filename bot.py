@@ -2,6 +2,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from functools import wraps
 from core.quotes import Quote
 from core.exp import Exp
+from core.l2on import Player
 
 import logging
 import secrets
@@ -58,19 +59,25 @@ def error(bot, update, error):
 @update_logger
 @restricted_to_chats
 def help(bot, update):
-    update.message.reply_text(config.help_msg, parse_mode="Markdown", quote=False)
+    update.message.reply_text(config.help_msg, parse_mode="Markdown",
+                              quote=False,
+                              disable_notification=True)
 
 
 @update_logger
 def myid(bot, update):
     user = update.effective_user.first_name
     user_id = update.effective_user.id
-    update.message.reply_text("{}, {}".format(user, user_id), quote=False)
+    update.message.reply_text("{}, {}".format(user, user_id),
+                              quote=False,
+                              disable_notification=True)
 
 
 @update_logger
 def ping(bot, update):
-    update.message.reply_text('Dev!', quote=False)
+    update.message.reply_text('Dev!',
+                              quote=False,
+                              disable_notification=True)
 
 
 @restricted
@@ -90,14 +97,18 @@ def quote_get(bot, update, args):
             id, text = item[0], item[1]
             res += "{}. {}\n".format(id, text)
 
-        update.message.reply_text(res, quote=False)
+        update.message.reply_text(res,
+                                  quote=False,
+                                  disable_notification=True)
         return
     else:
         query = quote.get(args[0])
 
     id, text = query[0], query[1]
     reply = "{}. {}".format(id, text)
-    update.message.reply_text(reply, quote=False)
+    update.message.reply_text(reply,
+                              quote=False,
+                              disable_notification=True)
 
 
 @restricted
@@ -113,9 +124,13 @@ def quote_add(bot, update, args):
     try:
         res = quote.add(data)
         id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} добавлена:\n{}".format(id, text), quote=False)
+        update.message.reply_text("Цитата № {} добавлена:\n{}".format(id, text),
+                                  quote=False,
+                                  disable_notification=True)
     except Exception as e:
-        update.message.reply_text("Не удалось добавить цитату: '%s'" % (e), quote=False)
+        update.message.reply_text("Не удалось добавить цитату: '%s'" % (e),
+                                  quote=False,
+                                  disable_notification=True)
         return
 
 
@@ -133,16 +148,22 @@ def quote_remove(bot, update, args):
     try:
         res = quote.remove(id)
         id , text = res[0], res[1]
-        update.message.reply_text("Цитата № {} удалена:\n{}".format(id, text), quote=False)
+        update.message.reply_text("Цитата № {} удалена:\n{}".format(id, text),
+                                  quote=False,
+                                  disable_notification=True)
         return
     except Exception as e:
-        update.message.reply_text("Не удалось удалить цитату: '%s'" % (e), quote=False)
+        update.message.reply_text("Не удалось удалить цитату: '%s'" % (e),
+                                  quote=False,
+                                  disable_notification=True)
 
 
 @update_logger
 def next_level(bot, update, args):
     if len(args) == 0:
-        update.message.reply_text('Какой левел, ущербный?', quote=False)
+        update.message.reply_text('Какой левел, ущербный?',
+                                  quote=False,
+                                  disable_notification=True)
         return
     elif len(args) >= 2:
         lvl, percent = args[0], args[1]
@@ -153,7 +174,9 @@ def next_level(bot, update, args):
     user = update.effective_user.first_name
     res = exp.next_level(lvl, percent)
     output = '{}, {}'
-    update.message.reply_text(output.format(user, res), quote=False)
+    update.message.reply_text(output.format(user, res),
+                              quote=False,
+                              disable_notification=True)
 
 
 @update_logger
@@ -161,13 +184,33 @@ def exp_table(bot, update, args):
     exp = Exp()
 
     if len(args) == 0:
-        update.message.reply_text(exp.exp_table(), quote=False, parse_mode="Markdown")
+        update.message.reply_text(exp.exp_table(),
+                                  quote=False,
+                                  parse_mode="Markdown",
+                                  disable_notification=True)
     elif len(args) >= 2:
         start, end = args[0], args[1]
-        update.message.reply_text(exp.exp_table(start, end), quote=False, parse_mode="Markdown")
+        update.message.reply_text(exp.exp_table(start, end),
+                                  quote=False,
+                                  parse_mode="Markdown",
+                                  disable_notification=True)
     else:
         start = args[0]
-        update.message.reply_text(exp.exp_table(start), quote=False, parse_mode="Markdown")
+        update.message.reply_text(exp.exp_table(start),
+                                  quote=False,
+                                  parse_mode="Markdown",
+                                  disable_notification=True)
+
+
+@update_logger
+def l2on_get_player(bot, update):
+    nickname = update.message.text.strip('/').split()[0]
+    player = Player(nickname)
+    update.message.reply_text(player.parser(),
+                              quote=False,
+                              parse_mode="Markdown",
+                              disable_web_page_preview=True,
+                              disable_notification=True)
 
 
 @update_logger
@@ -188,7 +231,7 @@ def main():
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
-    dp.add_handler(MessageHandler(Filters.command, test))
+    dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
     dp.add_error_handler(error)
 
