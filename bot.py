@@ -61,7 +61,8 @@ def error(bot, update, error):
 def help(bot, update):
     update.message.reply_text(config.help_msg, parse_mode="Markdown",
                               quote=False,
-                              disable_notification=True)
+                              disable_notification=True,
+                              disable_web_page_preview=True)
 
 
 @update_logger
