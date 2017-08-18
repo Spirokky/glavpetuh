@@ -1,4 +1,5 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Bot
 from functools import wraps
 from core.quotes import Quote
 from core.exp import Exp
@@ -8,6 +9,9 @@ import logging
 import secrets
 import config
 import datetime
+import sqlite3
+import subprocess
+import threading
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -214,15 +218,48 @@ def l2on_get_player(bot, update):
                               disable_notification=True)
 
 
-@update_logger
+def get_tweets(bot, update):
+    tweets = []
+
+    try:
+        connect = sqlite3.connect('core/testing_database.db')
+        cursor = connect.cursor()
+
+        with cursor:
+            cursor.execute("SELECT text FROM tweets WHERE status = 0;")
+            tweets = cursor.fetchall()
+            cursor.execute("UPDATE tweets SET status = 1 WHERE status = 0")
+
+    except Exception as e:
+        logger.error(e)
+
+    if tweets:
+        bot = Bot(secrets.TOKEN)
+        for tw in tweets:
+            bot.send_message(chat_id=303422193,
+                             text=tw)
+
+
 def test(bot, update):
-    cmd = update.message.text.strip('/')
-    update.message.reply_text('command filter\ncmd: "%s"' % cmd)
+    bot = Bot(secrets.TOKEN)
+    bot.send_message(chat_id=303422193,
+                     text='job testing')
+
+
+def worker():
+    try:
+        print('Starting subprocess')
+        subprocess.call('python core/tweelistener.py')
+    except Exception as e:
+        logger.error(e)
 
 
 def main():
     updater = Updater(secrets.TOKEN)
     dp = updater.dispatcher
+
+    t = threading.Thread(target=worker)
+    t.start()
 
     dp.add_handler(CommandHandler('ping', ping))
     dp.add_handler(CommandHandler("help", help))
@@ -235,6 +272,9 @@ def main():
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
     dp.add_error_handler(error)
+
+    queue = updater.job_queue
+    queue.run_repeating(get_tweets, 5)
 
     updater.start_polling()
     updater.idle()
