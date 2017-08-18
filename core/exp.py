@@ -43,7 +43,7 @@ class Exp(object):
             end = 85
 
         rng = range(start, end + 1)
-        output = ' *{:>3}  {:^18}  {:^18}*\n'.format('lvl',
+        output = '```\n{:>3}   {:<16}   {:<16}\n'.format('lvl',
                                                      'До повышения',
                                                      'Всего опыта')
         table = self.levels
@@ -51,8 +51,9 @@ class Exp(object):
         for i in rng:
             for k, v in table.items():
                 if k == str(i):
-                    output += '{:>3} | {:^18,} | {:^18,}\n'.format(i, v[1],
+                    output += '{:>3} | {:<16,} | {:<16,}\n'.format(i, v[1],
                                                                    v[0])
+        output += "```"
         return output
 
 
