@@ -1,22 +1,22 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram import Bot
-from functools import wraps
-from core.quotes import Quote
-from core.exp import Exp
-from core.l2on import Player
-
-import logging
-import secrets
-import config
 import datetime
+import logging
 import sqlite3
-import subprocess
 import threading
 
+from functools import wraps
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from core.exp import Exp
+from core.l2on import Player
+from core.quotes import Quote
+from core import tweelistener
+from config import config, secrets
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+db = 'core/database.db'
+db_test = 'core/testing_database.db'
 
 
 def restricted(func):
@@ -89,7 +89,7 @@ def ping(bot, update):
 @restricted_to_chats
 @update_logger
 def quote_get(bot, update, args):
-    quote = Quote('core/database.db')
+    quote = Quote(db)
 
     if not args:
         query = quote.getrandom()
@@ -110,7 +110,7 @@ def quote_get(bot, update, args):
         query = quote.get(args[0])
 
     id, text = query[0], query[1]
-    reply = "{}. {}".format(id, text)
+    reply = "{}".format(text)
     update.message.reply_text(reply,
                               quote=False,
                               disable_notification=True)
@@ -120,7 +120,7 @@ def quote_get(bot, update, args):
 @restricted_to_chats
 @update_logger
 def quote_add(bot, update, args):
-    quote = Quote('core/database.db')
+    quote = Quote(db)
     data = " ".join(args)
 
     if not args:
@@ -143,7 +143,7 @@ def quote_add(bot, update, args):
 @restricted_to_chats
 @update_logger
 def quote_remove(bot, update, args):
-    quote = Quote('core/database.db')
+    quote = Quote(db)
 
     if not args:
         return
@@ -218,48 +218,42 @@ def l2on_get_player(bot, update):
                               disable_notification=True)
 
 
-def get_tweets(bot, update):
-    tweets = []
-
+def get_tweets(bot, job):
+    tweet = None
     try:
-        connect = sqlite3.connect('core/testing_database.db')
+        connect = sqlite3.connect(db)
         cursor = connect.cursor()
 
-        with cursor:
-            cursor.execute("SELECT text FROM tweets WHERE status = 0;")
-            tweets = cursor.fetchall()
+        with connect:
+            cursor.execute("SELECT tweet FROM tweets WHERE status = 0;")
+            tweet = cursor.fetchall()[-1][0]
             cursor.execute("UPDATE tweets SET status = 1 WHERE status = 0")
 
-    except Exception as e:
+    except IndexError:
+        pass
+
+    except BaseException as e:
         logger.error(e)
 
-    if tweets:
-        bot = Bot(secrets.TOKEN)
-        for tw in tweets:
-            bot.send_message(chat_id=303422193,
-                             text=tw)
+    if tweet:
+        bot.send_message(chat_id=303422193,
+                         text=tweet)
 
 
-def test(bot, update):
-    bot = Bot(secrets.TOKEN)
+def test(bot, job):
     bot.send_message(chat_id=303422193,
                      text='job testing')
 
 
 def worker():
-    try:
-        print('Starting subprocess')
-        subprocess.call('python core/tweelistener.py')
-    except Exception as e:
-        logger.error(e)
+    tweelistener.main()
 
 
 def main():
+    logger.info("Starting...")
+
     updater = Updater(secrets.TOKEN)
     dp = updater.dispatcher
-
-    t = threading.Thread(target=worker)
-    t.start()
 
     dp.add_handler(CommandHandler('ping', ping))
     dp.add_handler(CommandHandler("help", help))
@@ -274,12 +268,17 @@ def main():
     dp.add_error_handler(error)
 
     queue = updater.job_queue
-    queue.run_repeating(get_tweets, 5)
+
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+    logger.info("Connected to tweeter streaming API")
+
+    queue.run_repeating(get_tweets, interval=5, first=0)
+    logger.info("Start polling tweets")
 
     updater.start_polling()
     updater.idle()
 
 
 if __name__ == '__main__':
-    print('Working...')
     main()

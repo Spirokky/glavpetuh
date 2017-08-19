@@ -1,11 +1,11 @@
-from selenium import webdriver
-from bs4 import BeautifulSoup
-
 import re
 import string
-import requests
-import config
 
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+
+from config import config
 
 driver = webdriver.PhantomJS(executable_path=config.webdriver_path)
 URL = 'http://l2on.net'

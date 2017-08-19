@@ -1,16 +1,17 @@
-import sqlite3
-import tweepy
-import logging
-import secrets
 import html
 import json
+import logging
+import sqlite3
+import tweepy
 
+from config import secrets
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-db = 'testing_database.db'
+db = 'core/database.db'
+db_test = 'core/testing_database.db'
 
 
 class TweetsListener(tweepy.StreamListener):
@@ -46,7 +47,7 @@ class TweetsListener(tweepy.StreamListener):
 
             if res:
                 with self.connect:
-                    self.cursor.execute("INSERT INTO tweets VALUES (?);", res)
+                    self.cursor.execute("INSERT INTO tweets VALUES (?, ?);", res)
 
         except Exception as e:
             logger.warning(e)
@@ -76,12 +77,13 @@ def main():
     auth.set_access_token(access_token, access_secret)
     stream = tweepy.Stream(auth, TweetsListener(), timeout=None)
 
-    stream.filter(follow=['781306838']) # follow=['781306838']
+    stream.filter(follow=['2849516458', '781306838'])
 
 
 if __name__ == '__main__':
     try:
-        main()
+        db = db_test
+        main(False, False)
 
     except Exception as e:
         logger.warning(e)
