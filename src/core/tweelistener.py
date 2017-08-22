@@ -40,7 +40,7 @@ class TweetsListener(tweepy.StreamListener):
             text = html.unescape(data["text"])
             userid = data["user"]["id"]
 
-            if userid == 781306838:
+            if userid in [2849516458, 781306838]:
                 res = (0, text)
             else:
                 res = None
@@ -57,7 +57,7 @@ class TweetsListener(tweepy.StreamListener):
             logger.info(status)
 
         except Exception as e:
-            logger.warning(str(e))
+            logger.warning(e)
 
     def on_error(self, status_code):
         logger.error(status_code)
