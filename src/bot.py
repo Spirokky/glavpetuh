@@ -85,7 +85,6 @@ def ping(bot, update):
                               disable_notification=True)
 
 
-@restricted
 @restricted_to_chats
 @update_logger
 def quote_get(bot, update, args):
