@@ -80,7 +80,7 @@ def myid(bot, update):
 
 @update_logger
 def ping(bot, update):
-    update.message.reply_text('Dev!',
+    update.message.reply_text('Testing',
                               quote=False,
                               disable_notification=True)
 
