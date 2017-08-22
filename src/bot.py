@@ -236,7 +236,8 @@ def get_tweets(bot, job):
 
     if tweet:
         bot.send_message(chat_id=303422193,
-                         text=tweet)
+                         text=tweet,
+                         disable_web_page_preview=True)
 
 
 def test(bot, job):
