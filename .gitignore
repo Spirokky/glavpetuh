@@ -1,10 +1,24 @@
-env/
-backup/
-core/
-__pycache__/
+# dir
+env
+backup
+__pycache__
 .idea
 phantomjs*
+
+
+# .py
+*.py[cod]
+testdb.py
 secrets.py
-*.log
+
+
+# executions
 *.exe
-.pyc
+
+
+# logs
+*.log
+
+
+# databases
+*.db

@@ -1,4 +1,4 @@
-telepot == 10.4
+python-telegram-bot == 7.0.1
 beautifulsoup4 == 4.5.3
 requests == 2.13.0
 selenium == 3.4.1
