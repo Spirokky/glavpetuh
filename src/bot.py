@@ -80,7 +80,7 @@ def myid(bot, update):
 
 @update_logger
 def ping(bot, update):
-    update.message.reply_text('Testing',
+    update.message.reply_text('Курлык!',
                               quote=False,
                               disable_notification=True)
 
@@ -235,7 +235,7 @@ def get_tweets(bot, job):
         logger.error(e)
 
     if tweet:
-        bot.send_message(chat_id=303422193,
+        bot.send_message(chat_id=-1001105947437,
                          text=tweet,
                          disable_web_page_preview=True)
 
