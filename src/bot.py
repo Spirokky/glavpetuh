@@ -267,14 +267,14 @@ def main():
 
     dp.add_error_handler(error)
 
-    queue = updater.job_queue
+    # queue = updater.job_queue
 
-    t = threading.Thread(target=worker, daemon=True)
-    t.start()
-    logger.info("Connected to tweeter streaming API")
+    # t = threading.Thread(target=worker, daemon=True)
+    # t.start()
+    # logger.info("Connected to tweeter streaming API")
 
-    queue.run_repeating(get_tweets, interval=5, first=0)
-    logger.info("Start polling tweets")
+    # queue.run_repeating(get_tweets, interval=5, first=0)
+    # logger.info("Start polling tweets")
 
     updater.start_polling()
     updater.idle()
