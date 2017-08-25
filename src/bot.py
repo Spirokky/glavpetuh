@@ -4,7 +4,9 @@ import sqlite3
 import threading
 
 from functools import wraps
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, \
+    MessageHandler, Filters, CallbackQueryHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core.exp import Exp
 from core.l2on import Player
 from core.quotes import Quote
@@ -240,9 +242,48 @@ def get_tweets(bot, job):
                          disable_web_page_preview=True)
 
 
-def test(bot, job):
-    bot.send_message(chat_id=303422193,
-                     text='job testing')
+@update_logger
+def vote(bot, update, args):
+    msg = ' '.join(args) + '\n'
+
+    keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
+                 InlineKeyboardButton("Нет", callback_data='2')],]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text(msg, reply_markup=reply_markup, quote=False)
+
+
+@update_logger
+def button(bot, update):
+    query = update.callback_query
+
+    if query.data == '1':
+        emj = '\u2705 '
+    else:
+        emj = '\u274C '
+
+    keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
+                 InlineKeyboardButton("Нет", callback_data='2')], ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    user = query.from_user.first_name
+    msg = query.message.text
+    upd = '\n' + emj + user
+
+    v1 = '\n\u2705 ' + user
+    v2 = '\n\u274C ' + user
+
+    msg = msg.replace(v1, '')
+    msg = msg.replace(v2, '')
+
+    msg += upd
+
+    bot.edit_message_text(text=msg,
+                          chat_id=query.message.chat_id,
+                          message_id=query.message.message_id,
+                          reply_markup = reply_markup,)
 
 
 def worker():
@@ -263,6 +304,8 @@ def main():
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
+    dp.add_handler(CommandHandler('vote', vote, pass_args=True))
+    dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
     dp.add_error_handler(error)
