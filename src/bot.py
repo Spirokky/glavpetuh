@@ -211,11 +211,11 @@ def exp_table(bot, update, args):
 def get_exp_stats_today(bot, update):
     exp = Exp()
     data = exp.get_stats_today()
-
-    res = "```{:>3} {:<16} {:^14} {:^12} {:^5}\n".format('lvl', 'Nickname', 'Накачано', 'Проценты','PvP')
+    res = "```\n"
+    res += "{:>3} {:<15} {:<14} {:<16}\n".format('lvl', 'Nickname', 'Накачано', 'Проценты')
 
     for item in data:
-        res += "{:>3} {:<16} {:^14} {:^12} {:^5}\n".format(item[0], item[1], item[2], item[3], item[4])
+        res += "{:>3} {:<15} {:<14} {:<16}\n".format(item[0], item[1], item[2], item[3])
 
     res += "```"
 
@@ -327,7 +327,8 @@ def main():
 
     dp.add_error_handler(error)
 
-    # queue = updater.job_queue
+    queue = updater.job_queue
+    queue.run_daily(get_exp_stats_today, datetime.time(0, 5))
     # queue.run_repeating(get_tweets, interval=5, first=0)
 
     updater.start_polling()
