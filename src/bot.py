@@ -208,6 +208,22 @@ def exp_table(bot, update, args):
                                   disable_notification=True)
 
 
+def get_exp_stats_today(bot, update):
+    exp = Exp()
+    data = exp.get_stats_today()
+
+    res = "```{:>3} {:<16} {:^14} {:^12} {:^5}\n".format('lvl', 'Nickname', 'Накачано', 'Проценты','PvP')
+
+    for item in data:
+        res += "{:>3} {:<16} {:^14} {:^12} {:^5}\n".format(item[0], item[1], item[2], item[3], item[4])
+
+    res += "```"
+
+    bot.send_message(chat_id=303422193,
+                     text=res,
+                     parse_mode="Markdown")
+
+
 @update_logger
 def l2on_get_player(bot, update):
     nickname = update.message.text.strip('/').split()[0]
@@ -305,19 +321,14 @@ def main():
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
     dp.add_handler(CommandHandler('vote', vote, pass_args=True))
+    dp.add_handler(CommandHandler('stat', get_exp_stats_today))
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
     dp.add_error_handler(error)
 
     # queue = updater.job_queue
-
-    # t = threading.Thread(target=worker, daemon=True)
-    # t.start()
-    # logger.info("Connected to tweeter streaming API")
-
     # queue.run_repeating(get_tweets, interval=5, first=0)
-    # logger.info("Start polling tweets")
 
     updater.start_polling()
     updater.idle()
