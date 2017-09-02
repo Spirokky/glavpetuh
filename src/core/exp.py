@@ -1,5 +1,9 @@
-from config import config
+import requests
 
+from config import config, secrets
+from bs4 import BeautifulSoup
+from datetime import datetime
+from operator import itemgetter
 
 class Exp(object):
 
@@ -56,7 +60,35 @@ class Exp(object):
         output += "```"
         return output
 
+    def get_stats_today(self):
+        urls = secrets.l2tracker
+        result = []
+
+        for name, url in urls.items():
+            req = requests.get(url)
+            soup = BeautifulSoup(req.text, 'html.parser')
+            lvl = soup.caption.string.split()[0]
+            first_row = soup.find('tr', {'class': 'level' + str(lvl)})
+            cells = first_row.find_all('td')
+            date = cells[0].string
+            now = datetime.now().strftime('%Y-%m-%d')
+
+            if date != now:
+                continue
+            try:
+                exp_gained = cells[2].find_all('span')[1].string
+            except IndexError:
+                exp_gained = +0
+
+            percent = cells[3].text
+            pvp_count = cells[4].text
+            result.insert(1, (lvl, name, exp_gained, percent, pvp_count))
+
+        res = sorted(result, key=lambda tup: tup[0], reverse=True)
+
+        return res
+
 
 if __name__ == "__main__":
     exp = Exp()
-    print(exp.exp_table(80, -34))
+    print(exp.get_stats_today())
