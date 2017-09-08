@@ -84,6 +84,9 @@ class Exp(object):
             pvp_count = cells[4].text
             result.insert(1, (lvl, name, exp_gained, percent, pvp_count))
 
+        if not result:
+            return None
+
         res = sorted(result, key=lambda tup: tup[0], reverse=True)
 
         return res

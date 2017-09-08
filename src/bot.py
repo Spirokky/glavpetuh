@@ -211,17 +211,21 @@ def exp_table(bot, update, args):
 def get_exp_stats_today(bot, update):
     exp = Exp()
     data = exp.get_stats_today()
-    res = "```\n"
-    res += "{:>3} {:<15} {:<14} {:<16}\n".format('lvl', 'Nickname', 'Накачано', 'Проценты')
+    if data:
+        res = "```\n"
+        res += "{:>3} {:<15} {:<14} {:<16}\n".format('lvl', 'Nickname', 'Накачано', 'Проценты')
 
-    for item in data:
-        res += "{:>3} {:<15} {:<14} {:<16}\n".format(item[0], item[1], item[2], item[3])
+        for item in data:
+            res += "{:>3} {:<15} {:<14} {:<16}\n".format(item[0], item[1], item[2], item[3])
 
-    res += "```"
-
-    bot.send_message(chat_id=303422193,
-                     text=res,
-                     parse_mode="Markdown")
+        res += "```"
+        bot.send_message(chat_id=303422193,
+                         text=res,
+                         parse_mode="Markdown")
+    else:
+        bot.send_message(chat_id=303422193,
+                         text="Не удалось загрузить данные.",
+                         parse_mode="Markdown")
 
 
 @update_logger
@@ -328,7 +332,18 @@ def main():
     dp.add_error_handler(error)
 
     queue = updater.job_queue
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=21, minute=5))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=21, minute=0))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=22, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=23, minute=0))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=0, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=1, minute=0))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=2, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=3, minute=0))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=4, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=5, minute=0))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=6, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=7, minute=0))
+
     # queue.run_repeating(get_tweets, interval=5, first=0)
 
     updater.start_polling()
