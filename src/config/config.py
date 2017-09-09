@@ -9,6 +9,8 @@ help_msg = """
 
 *[Разное]*
 */vote* `текст` - голосование Да/Нет
+*/ping* - проверить пульс
+*/myid* - узнать свой id
 
 *[L2on]*
 */*`nickname` - информация о персонаже с [l2on.net](http://l2on.net)
@@ -27,8 +29,8 @@ LIST_OF_GROUPS = [-1001105947437,  # back to l2
                   303422193,       # Spirokky's private
                  ]
 
-# webdriver_path = "D:\Downloads\phantomjs-2.1.1-windows\\bin\phantomjs.exe"
-webdriver_path = "phantomjs-2.1.1-linux-x86_64/bin/phantomjs"
+webdriver_path = "D:\Downloads\phantomjs-2.1.1-windows\\bin\phantomjs.exe"
+# webdriver_path = "phantomjs-2.1.1-linux-x86_64/bin/phantomjs"
 
 levels = {
     '1': (0, 0),
