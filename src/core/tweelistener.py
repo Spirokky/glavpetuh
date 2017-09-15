@@ -13,13 +13,12 @@ logger = logging.getLogger(__name__)
 db = 'core/database.db'
 db_test = 'core/testing_database.db'
 
-
 class TweetsListener(tweepy.StreamListener):
 
     def __init__(self):
         try:
             self.connect = sqlite3.connect(db)
-            self.cursor = self.connect
+            self.cursor = self.connect()
         except Exception as e:
             logger.error("Cannot connect to '%s' cause '%s'" % (db, e))
 

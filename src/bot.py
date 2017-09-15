@@ -332,17 +332,7 @@ def main():
     dp.add_error_handler(error)
 
     queue = updater.job_queue
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=21, minute=0))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=22, minute=30))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=23, minute=0))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=0, minute=30))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=1, minute=0))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=2, minute=30))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=3, minute=0))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=4, minute=30))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=5, minute=0))
     queue.run_daily(get_exp_stats_today, datetime.time(hour=6, minute=30))
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=7, minute=0))
 
     # queue.run_repeating(get_tweets, interval=5, first=0)
 
