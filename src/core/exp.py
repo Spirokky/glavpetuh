@@ -76,7 +76,7 @@ class Exp(object):
             if first_row:
                 date = first_row.find_all('td')[0].string
 
-                today = datetime.datetime.now()
+                today = datetime.now()
 
                 if today.strftime('%Y-%m-%d') != date:
                     continue
