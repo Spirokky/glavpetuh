@@ -3,3 +3,6 @@ beautifulsoup4 == 4.5.3
 requests == 2.13.0
 selenium == 3.4.1
 tweepy == 3.5.0
+matplotlib==2.0.2
+pandas==0.20.3
+six==1.10.0
