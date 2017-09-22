@@ -327,8 +327,6 @@ def main():
 
     dp.add_error_handler(error)
 
-    queue = updater.job_queue
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=21, minute=5))
     # queue.run_repeating(get_tweets, interval=5, first=0)
 
     updater.start_polling()
