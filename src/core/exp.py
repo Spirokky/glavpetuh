@@ -1,9 +1,14 @@
 import requests
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import six
 
 from config import config, secrets
 from bs4 import BeautifulSoup
 from datetime import datetime
-from operator import itemgetter
+
 
 class Exp(object):
 
@@ -69,26 +74,117 @@ class Exp(object):
             soup = BeautifulSoup(req.text, 'html.parser')
             lvl = soup.caption.string.split()[0]
             first_row = soup.find('tr', {'class': 'level' + str(lvl)})
-            cells = first_row.find_all('td')
-            date = cells[0].string
-            now = datetime.now().strftime('%Y-%m-%d')
 
-            if date != now:
+            if first_row:
+                date = first_row.find_all('td')[0].string
+
+                today = datetime.now()
+
+                if today.strftime('%Y-%m-%d') != date:
+                    continue
+
+                exp_data = []
+                for string in first_row.find_all('td')[2].strings:
+                    exp_data.append(string)
+
+                try:
+                    total_exp = exp_data[0].replace(' ', '')
+                except IndexError:
+                    total_exp = None
+
+                try:
+                    exp_gained = exp_data[3].replace(' ', '')
+                except IndexError:
+                    exp_gained = None
+
+
+                percents = []
+                for string in first_row.find_all('td')[3].stripped_strings:
+                    percents.append(string.rstrip('(), '))
+
+                try:
+                    total_percent = percents[0]
+                except IndexError:
+                    total_percent = None
+
+                try:
+                    percent_gained = percents[1]
+                except IndexError:
+                    percent_gained = None
+
+
+                pvp = []
+                for string in first_row.find_all('td')[4].stripped_strings:
+                    pvp.append(string.rstrip('() '))
+
+                try:
+                    total_pvp = pvp[0].replace(' ', '')
+                except IndexError:
+                    total_pvp = "0"
+
+                try:
+                    pvp_gained = pvp[1].replace(' ', '')
+                except IndexError:
+                    pvp_gained = "+0"
+
+
+                pk = []
+                for string in first_row.find_all('td')[5].stripped_strings:
+                    pk.append(string.rstrip('() '))
+
+                try:
+                    total_pk = pk[0].replace(' ', '')
+                except IndexError:
+                    total_pk = "0"
+
+                try:
+                    pk_gained = pk[1].replace(' ', '')
+                except IndexError:
+                    pk_gained = "+0"
+
+                res = [name, date, lvl, total_exp, exp_gained,
+                       total_percent, percent_gained, total_pvp,
+                       pvp_gained, total_pk, pk_gained]
+
+                result.append(res)
+            else:
                 continue
-            try:
-                exp_gained = cells[2].find_all('span')[1].string
-            except IndexError:
-                exp_gained = +0
 
-            percent = cells[3].text
-            pvp_count = cells[4].text
-            result.insert(1, (lvl, name, exp_gained, percent, pvp_count))
+        return result
 
-        res = sorted(result, key=lambda tup: tup[0], reverse=True)
 
-        return res
+def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
+                     header_color='#40466e', row_colors=['#f7f7f7', 'w'],
+                     edge_color='w', bbox=[0, 0, 1, 1], header_columns=0,
+                     ax=None, **kwargs):
+
+    if ax is None:
+        size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
+        fig, ax = plt.subplots(figsize=size)
+        fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
+        ax.axis('off')
+
+    mpl_table = ax.table(cellText=data.values, cellLoc="center", bbox=bbox, colLabels=data.columns, **kwargs)
+
+    mpl_table.auto_set_font_size(False)
+    mpl_table.set_fontsize(font_size)
+
+    for k, cell in six.iteritems(mpl_table._cells):
+        cell.set_edgecolor(edge_color)
+        if k[0] == 0 or k[1] < header_columns:
+            cell.set_text_props(weight='bold', color='w')
+            cell.set_facecolor(header_color)
+        else:
+            cell.set_facecolor(row_colors[k[0]%len(row_colors)])
+
+    try:
+        now = datetime.now().strftime("%Y-%m-%d")
+        filename = "{}-stats.png".format(now)
+        plt.savefig(filename)
+        return filename
+    except Exception:
+        return None
 
 
 if __name__ == "__main__":
-    exp = Exp()
-    print(exp.get_stats_today())
+    pass

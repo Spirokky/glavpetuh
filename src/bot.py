@@ -1,13 +1,13 @@
 import datetime
 import logging
 import sqlite3
-import threading
+import pandas as pd
 
 from functools import wraps
 from telegram.ext import Updater, CommandHandler, \
     MessageHandler, Filters, CallbackQueryHandler
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from core.exp import Exp
+from core.exp import Exp, render_mpl_table
 from core.l2on import Player
 from core.quotes import Quote
 from core import tweelistener
@@ -211,17 +211,31 @@ def exp_table(bot, update, args):
 def get_exp_stats_today(bot, update):
     exp = Exp()
     data = exp.get_stats_today()
-    res = "```\n"
-    res += "{:>3} {:<15} {:<14} {:<16}\n".format('lvl', 'Nickname', 'Накачано', 'Проценты')
+    data.sort(key=lambda x: x[2], reverse=True)
 
-    for item in data:
-        res += "{:>3} {:<15} {:<14} {:<16}\n".format(item[0], item[1], item[2], item[3])
+    if data:
+        df = pd.DataFrame()
+        df['Имя'] = [x[0] for x in data]
+        df['Уровень'] = [x[2] for x in data]
+        df['Накачано'] = ["{:>14,}".format(int(x[4])) for x in data]
+        df['Проценты'] = ["{} ({})".format(x[5], x[6]) for x in data]
+        df['PvP'] = ["{} ({})".format(x[7], x[8]) for x in data]
+        df['PK'] = ["{} ({})".format(x[9], x[10]) for x in data]
 
-    res += "```"
+        try:
+            filename = render_mpl_table(df, header_columns=0, col_width=2.0)
+            print(filename)
 
-    bot.send_message(chat_id=303422193,
-                     text=res,
-                     parse_mode="Markdown")
+            with open(filename, 'rb') as img:
+                bot.send_photo(chat_id=303422193, photo=img)
+
+            return
+        except Exception as e:
+            logger.error(e)
+    else:
+        bot.send_message(chat_id=303422193,
+                         text="Не удалось загрузить данные.")
+        return
 
 
 @update_logger
@@ -327,7 +341,8 @@ def main():
 
     dp.add_error_handler(error)
 
-    # queue.run_repeating(get_tweets, interval=5, first=0)
+    queue = updater.job_queue
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=6, minute=30))
 
     updater.start_polling()
     updater.idle()
