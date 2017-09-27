@@ -95,7 +95,7 @@ class Exp(object):
                 try:
                     exp_gained = exp_data[3].replace(' ', '')
                 except IndexError:
-                    exp_gained = ='+0'
+                    exp_gained = '+0'
 
 
                 percents = []
