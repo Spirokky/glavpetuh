@@ -90,12 +90,12 @@ class Exp(object):
                 try:
                     total_exp = exp_data[0].replace(' ', '')
                 except IndexError:
-                    total_exp = None
+                    total_exp = '0'
 
                 try:
                     exp_gained = exp_data[3].replace(' ', '')
                 except IndexError:
-                    exp_gained = None
+                    exp_gained = ='+0'
 
 
                 percents = []
@@ -105,12 +105,12 @@ class Exp(object):
                 try:
                     total_percent = percents[0]
                 except IndexError:
-                    total_percent = None
+                    total_percent = '0'
 
                 try:
                     percent_gained = percents[1]
                 except IndexError:
-                    percent_gained = None
+                    percent_gained = '+0%'
 
 
                 pvp = []
