@@ -1,17 +1,19 @@
 import datetime
 import logging
 import sqlite3
+import yaml
 import pandas as pd
 
 from functools import wraps
-from telegram.ext import Updater, CommandHandler, \
-    MessageHandler, Filters, CallbackQueryHandler
+from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core.exp import Exp, render_mpl_table
 from core.l2on import Player
 from core.quotes import Quote
 from core import tweelistener
-from config import config, secrets
+
+with open('config.yaml', 'r') as f:
+    cfg = yaml.load(f)
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -21,26 +23,33 @@ db = 'core/database.db'
 db_test = 'core/testing_database.db'
 
 
-def restricted(func):
+def admins(func):
+    """
+    Restrict access to user if he is not admin
+    """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
         user_id = update.effective_user.id
         username = update.effective_user.username
-        if user_id not in config.LIST_OF_ACCESS:
-            print("Access denied for {} [{}]".format(username, user_id))
+        if user_id not in cfg['Telegram']['admins']:
+            print("Admin access denied for {} [{}]".format(username, user_id))
             update.message.reply_text('Пiшов нахуй!', quote=False)
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
 
 
-def restricted_to_chats(func):
+def restricted(func):
+    """
+    Allow use command only inside trusted group
+    """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
+        print(update)
         chat_id = update.effective_chat.id
-        chat_name = update.effective_chat.title
-        if chat_id not in config.LIST_OF_GROUPS:
-            print("Access denied for {} [{}]".format(chat_name, chat_id))
+        username = update.effective_user.username
+        if chat_id not in cfg['Telegram']['groups']:
+            print("Group access denied for {} [{}]".format(username, chat_id))
             update.message.reply_text('Пiшов нахуй!', quote=False)
             return
         return func(bot, update, *args, **kwargs)
@@ -63,9 +72,30 @@ def error(bot, update, error):
 
 
 @update_logger
-@restricted_to_chats
+@restricted
 def help(bot, update):
-    update.message.reply_text(config.help_msg, parse_mode="Markdown",
+    help_message = """
+Доступные команды [бота](https://github.com/Spirokky/glavpetuh):
+
+*/help* - показать это сообщение
+
+*[Эксп]*
+*/lvl* `lvl` `%` - показывает сколько опыта осталось до lvl-up
+*/exp* `от` `до` - таблица опыта в выбранном диапазоне лвл-ов.
+
+*[Разное]*
+*/vote* `текст` - голосование Да/Нет
+*/ping* - проверить пульс
+
+*[L2on]*
+*/*`nickname` - информация о персонаже с [l2on.net](http://l2on.net)
+
+*[Цитаты]*
+*/quote* `id` - показывает случайную цитату или определенную, если указать id
+*/quoteadd* `text` - добавить цитату
+*/quoteremove* `id` - удалить цитату
+"""
+    update.message.reply_text(help_message, parse_mode="Markdown",
                               quote=False,
                               disable_notification=True,
                               disable_web_page_preview=True)
@@ -87,7 +117,7 @@ def ping(bot, update):
                               disable_notification=True)
 
 
-@restricted_to_chats
+@restricted
 @update_logger
 def quote_get(bot, update, args):
     quote = Quote(db)
@@ -117,8 +147,7 @@ def quote_get(bot, update, args):
                               disable_notification=True)
 
 
-@restricted
-@restricted_to_chats
+@admins
 @update_logger
 def quote_add(bot, update, args):
     quote = Quote(db)
@@ -140,8 +169,7 @@ def quote_add(bot, update, args):
         return
 
 
-@restricted
-@restricted_to_chats
+@admins
 @update_logger
 def quote_remove(bot, update, args):
     quote = Quote(db)
@@ -313,7 +341,7 @@ def button(bot, update):
     bot.edit_message_text(text=msg,
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id,
-                          reply_markup = reply_markup,)
+                          reply_markup=reply_markup,)
 
 
 def worker():
@@ -323,7 +351,7 @@ def worker():
 def main():
     logger.info("Starting...")
 
-    updater = Updater(secrets.TOKEN)
+    updater = Updater(cfg['Telegram']['token'])
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('ping', ping))
@@ -335,7 +363,7 @@ def main():
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
     dp.add_handler(CommandHandler('vote', vote, pass_args=True))
-    dp.add_handler(CommandHandler('stat', get_exp_stats_today))
+    # dp.add_handler(CommandHandler('stat', get_exp_stats_today))
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
