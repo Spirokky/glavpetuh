@@ -20,6 +20,11 @@ secrets.py
 *.log
 
 
+# configs
+*.yaml
+!config.example.yaml
+
+
 # databases
 *.db
 
