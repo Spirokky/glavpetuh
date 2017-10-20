@@ -31,8 +31,7 @@ class Player(object):
             'a': 'search',
             'type': 'char',
         }
-        self.output = \
-"""
+        self.output = """
 [{}]({})
 _{}_
 [{}]({})
