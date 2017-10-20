@@ -1,38 +1,46 @@
 import requests
 import numpy as np
 import matplotlib
+import yaml
+import re
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import six
 
-from config import config, secrets
 from bs4 import BeautifulSoup
 from datetime import datetime
+
+
+with open('../config.yaml', 'r') as f:
+    cfg = yaml.load(f)
 
 
 class Exp(object):
 
     def __init__(self):
-        self.levels = config.levels
+        self.levels = cfg['levels']
 
-    def next_level(self, lvl, percent=None):
-        if int(lvl) <= 0:
+    def next_level(self, lvl, percent=0):
+        lvl = int(lvl)
+        percent = float(percent)
+
+        if lvl <= 0:
             return "Минимальный уровень: 1"
 
-        if int(lvl) > 85:
+        if lvl > 85:
             return 'Максимальный уровень: 85'
 
-        if int(lvl) == 85:
-            nextlvl = '85'
+        if lvl == 85:
+            nextlvl = 85
         else:
-            nextlvl = str(int(lvl) + 1)
+            nextlvl = lvl + 1
 
         if percent:
-            if int(percent) > 100:
+            if percent > 100:
                 return 'Больной ублюдок'
             else:
-                x = 100 - float(percent)
-                res = round(int(self.levels[nextlvl][1]) * x / 100)
+                x = 100 - percent
+                res = round(self.levels[nextlvl][1] * x / 100)
         else:
             res = self.levels[nextlvl][1]
 
@@ -66,12 +74,13 @@ class Exp(object):
         return output
 
     def get_stats_today(self):
-        urls = secrets.l2tracker
+        urls = cfg['L2tracker']
         result = []
 
-        for name, url in urls.items():
+        for url in urls:
             req = requests.get(url)
             soup = BeautifulSoup(req.text, 'html.parser')
+            name = soup.find('a', {'href': re.compile('\?char_id=*')}).string
             lvl = soup.caption.string.split()[0]
             first_row = soup.find('tr', {'class': 'level' + str(lvl)})
 
@@ -97,7 +106,6 @@ class Exp(object):
                 except IndexError:
                     exp_gained = '+0'
 
-
                 percents = []
                 for string in first_row.find_all('td')[3].stripped_strings:
                     percents.append(string.rstrip('(), '))
@@ -112,7 +120,6 @@ class Exp(object):
                 except IndexError:
                     percent_gained = '+0%'
 
-
                 pvp = []
                 for string in first_row.find_all('td')[4].stripped_strings:
                     pvp.append(string.rstrip('() '))
@@ -126,7 +133,6 @@ class Exp(object):
                     pvp_gained = pvp[1].replace(' ', '')
                 except IndexError:
                     pvp_gained = "+0"
-
 
                 pk = []
                 for string in first_row.find_all('td')[5].stripped_strings:
@@ -187,4 +193,5 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
 
 
 if __name__ == "__main__":
-    pass
+    e = Exp()
+    print(e.get_stats_today())
