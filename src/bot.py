@@ -131,8 +131,8 @@ def quote_get(bot, update, args):
         res = ""
 
         for item in query:
-            id, text = item[0], item[1]
-            res += "{}. {}\n".format(id, text)
+            quote_id, text = item[0], item[1]
+            res += "{}. {}\n".format(quote_id, text)
 
         update.message.reply_text(res,
                                   quote=False,
@@ -141,7 +141,7 @@ def quote_get(bot, update, args):
     else:
         query = quote.get(args[0])
 
-    id, text = query[0], query[1]
+    quote_id, text = query[0], query[1]
     reply = "{}".format(text)
     update.message.reply_text(reply,
                               quote=False,
@@ -159,8 +159,8 @@ def quote_add(bot, update, args):
 
     try:
         res = quote.add(data)
-        id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} добавлена:\n{}".format(id, text),
+        quote_id, text = res[0], res[1]
+        update.message.reply_text("Цитата № {} добавлена:\n{}".format(quote_id, text),
                                   quote=False,
                                   disable_notification=True)
     except Exception as e:
@@ -178,12 +178,12 @@ def quote_remove(bot, update, args):
     if not args:
         return
     else:
-        id = args[0]
+        quote_id = args[0]
 
     try:
-        res = quote.remove(id)
-        id , text = res[0], res[1]
-        update.message.reply_text("Цитата № {} удалена:\n{}".format(id, text),
+        res = quote.remove(quote_id)
+        quote_id, text = res[0], res[1]
+        update.message.reply_text("Цитата № {} удалена:\n{}".format(quote_id, text),
                                   quote=False,
                                   disable_notification=True)
         return
@@ -306,7 +306,7 @@ def vote(bot, update, args):
     msg = ' '.join(args) + '\n'
 
     keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
-                 InlineKeyboardButton("Нет", callback_data='2')],]
+                 InlineKeyboardButton("Нет", callback_data='2')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -356,7 +356,7 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('ping', ping))
-    dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler('help', help))
     dp.add_handler(CommandHandler('myid', myid))
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
