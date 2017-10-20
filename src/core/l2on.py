@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 
-with open('../config.yaml', 'r') as f:
+with open('config.yaml', 'r') as f:
     cfg = yaml.load(f)
 
 driver = webdriver.PhantomJS(executable_path=cfg['phantomjs'])

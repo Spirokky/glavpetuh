@@ -5,7 +5,8 @@ import yaml
 import pandas as pd
 
 from functools import wraps
-from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler)
+from telegram.ext import (Updater, CommandHandler, MessageHandler,
+                          Filters, CallbackQueryHandler)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core.exp import Exp, render_mpl_table
 from core.l2on import Player

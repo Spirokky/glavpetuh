@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 
 
-with open('../config.yaml', 'r') as f:
+with open('config.yaml', 'r') as f:
     cfg = yaml.load(f)
 
 
@@ -20,9 +20,8 @@ class Exp(object):
     def __init__(self):
         self.levels = cfg['levels']
 
-    def next_level(self, lvl, percent=0):
+    def next_level(self, lvl, percent=None):
         lvl = int(lvl)
-        percent = float(percent)
 
         if lvl <= 0:
             return "Минимальный уровень: 1"
@@ -36,6 +35,7 @@ class Exp(object):
             nextlvl = lvl + 1
 
         if percent:
+            percent = float(percent)
             if percent > 100:
                 return 'Больной ублюдок'
             else:
@@ -67,7 +67,7 @@ class Exp(object):
 
         for i in rng:
             for k, v in table.items():
-                if k == str(i):
+                if k == i:
                     output += '{:>3} | {:<16,} | {:<16,}\n'.format(i, v[1],
                                                                    v[0])
         output += "```"
@@ -194,4 +194,4 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
 
 if __name__ == "__main__":
     e = Exp()
-    print(e.get_stats_today())
+    print(e.exp_table('23', '30'))
