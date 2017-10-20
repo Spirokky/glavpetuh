@@ -41,7 +41,7 @@ def admins(func):
 
 def restricted(func):
     """
-    Allow use command only inside trusted group
+    Restrict command use outside trusted group
     """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
