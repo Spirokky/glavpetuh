@@ -1,13 +1,16 @@
 import re
 import string
+import yaml
 
 import requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from config import config
 
-driver = webdriver.PhantomJS(executable_path=config.webdriver_path)
+with open('../config.yaml', 'r') as f:
+    cfg = yaml.load(f)
+
+driver = webdriver.PhantomJS(executable_path=cfg['phantomjs'])
 URL = 'http://l2on.net'
 
 
