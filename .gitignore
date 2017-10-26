@@ -2,6 +2,7 @@
 env
 backup
 __pycache__
+.cache
 .idea
 phantomjs*
 
