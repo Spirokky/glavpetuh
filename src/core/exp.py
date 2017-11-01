@@ -1,14 +1,15 @@
 import requests
 import numpy as np
 import matplotlib
+matplotlib.use('Agg')
 import yaml
 import re
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import six
 
 from bs4 import BeautifulSoup
 from datetime import datetime
+
 
 
 with open('config.yaml', 'r') as f:
