@@ -6,6 +6,7 @@ import pandas as pd
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
+from telegram.error import TimedOut
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import Quote, Exp, Player, render_mpl_table
 from peewee import fn, DoesNotExist
@@ -63,9 +64,11 @@ def update_logger(func):
     return wrapped
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"' % (update, error))
-    print(error)
+def error_handler(bot, update, error):
+    try:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
+    except TimedOut:
+        pass
 
 
 @update_logger
@@ -335,7 +338,7 @@ def main():
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
-    dp.add_error_handler(error)
+    dp.add_error_handler(error_handler)
 
     queue = updater.job_queue
     queue.run_daily(get_exp_stats_today, datetime.time(hour=6, minute=30))
