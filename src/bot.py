@@ -1,6 +1,5 @@
 import datetime
 import logging
-import sqlite3
 import yaml
 import pandas as pd
 
@@ -8,10 +7,9 @@ from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from core.exp import Exp, render_mpl_table
-from core.l2on import Player
-from core.quotes import Quote
-from core import tweelistener
+from core import Quote, Exp, Player, render_mpl_table
+from peewee import fn, DoesNotExist
+
 
 with open('config.yaml', 'r') as f:
     cfg = yaml.load(f)
@@ -19,9 +17,6 @@ with open('config.yaml', 'r') as f:
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-db = 'core/database.db'
-db_test = 'core/testing_database.db'
 
 
 def admins(func):
@@ -70,11 +65,12 @@ def update_logger(func):
 
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"' % (update, error))
+    print(error)
 
 
 @update_logger
 @restricted
-def help(bot, update):
+def show_help(bot, update):
     help_message = """
 Доступные команды [бота](https://github.com/Spirokky/glavpetuh):
 
@@ -116,81 +112,6 @@ def ping(bot, update):
     update.message.reply_text('Курлык!',
                               quote=False,
                               disable_notification=True)
-
-
-@restricted
-@update_logger
-def quote_get(bot, update, args):
-    quote = Quote(db)
-
-    if not args:
-        query = quote.getrandom()
-
-    elif '-a' in args:
-        query = quote.get(all=True)
-        res = ""
-
-        for item in query:
-            quote_id, text = item[0], item[1]
-            res += "{}. {}\n".format(quote_id, text)
-
-        update.message.reply_text(res,
-                                  quote=False,
-                                  disable_notification=True)
-        return
-    else:
-        query = quote.get(args[0])
-
-    quote_id, text = query[0], query[1]
-    reply = "{}".format(text)
-    update.message.reply_text(reply,
-                              quote=False,
-                              disable_notification=True)
-
-
-@admins
-@update_logger
-def quote_add(bot, update, args):
-    quote = Quote(db)
-    data = " ".join(args)
-
-    if not args:
-        return
-
-    try:
-        res = quote.add(data)
-        quote_id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} добавлена:\n{}".format(quote_id, text),
-                                  quote=False,
-                                  disable_notification=True)
-    except Exception as e:
-        update.message.reply_text("Не удалось добавить цитату: '%s'" % (e),
-                                  quote=False,
-                                  disable_notification=True)
-        return
-
-
-@admins
-@update_logger
-def quote_remove(bot, update, args):
-    quote = Quote(db)
-
-    if not args:
-        return
-    else:
-        quote_id = args[0]
-
-    try:
-        res = quote.remove(quote_id)
-        quote_id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} удалена:\n{}".format(quote_id, text),
-                                  quote=False,
-                                  disable_notification=True)
-        return
-    except Exception as e:
-        update.message.reply_text("Не удалось удалить цитату: '%s'" % (e),
-                                  quote=False,
-                                  disable_notification=True)
 
 
 @update_logger
@@ -278,29 +199,6 @@ def l2on_get_player(bot, update):
                               disable_notification=True)
 
 
-def get_tweets(bot, job):
-    tweet = None
-    try:
-        connect = sqlite3.connect(db)
-        cursor = connect.cursor()
-
-        with connect:
-            cursor.execute("SELECT tweet FROM tweets WHERE status = 0;")
-            tweet = cursor.fetchall()[-1][0]
-            cursor.execute("UPDATE tweets SET status = 1 WHERE status = 0")
-
-    except IndexError:
-        pass
-
-    except BaseException as e:
-        logger.error(e)
-
-    if tweet:
-        bot.send_message(chat_id=-1001105947437,
-                         text=tweet,
-                         disable_web_page_preview=True)
-
-
 @update_logger
 def vote(bot, update, args):
     msg = ' '.join(args) + '\n'
@@ -345,8 +243,74 @@ def button(bot, update):
                           reply_markup=reply_markup,)
 
 
-def worker():
-    tweelistener.main()
+@restricted
+@update_logger
+def quote_get(bot, update, args):
+    output = ''
+
+    if not args:
+        query = Quote.select() \
+                     .order_by(fn.Random()) \
+                     .limit(1) \
+                     .get()
+
+        output = query.text
+
+    elif '-a' in args:
+        query = Quote.select()
+        for q in query:
+            output += "[{}] {}\n".format(q.id, q.text)
+
+    else:
+        try:
+            quote_id = int(args[0])
+            query = Quote.get(Quote.id == quote_id)
+            output = query.text
+        except ValueError:
+            query = Quote.select() \
+                         .order_by(fn.Random()) \
+                         .limit(1) \
+                         .get()
+            output = query.text
+        except DoesNotExist:
+            output = "Цитата не найдена"
+
+    update.message.reply_text(output, quote=False)
+
+
+@admins
+@update_logger
+def quote_add(bot, update, args):
+    if not args:
+        output = "Напиши цитату после /quoteadd"
+    else:
+        new_quote = " ".join(args)
+        query = Quote.create(text=new_quote)
+        output = "Цитата добавлена:\n{}".format(query.text)
+
+    update.message.reply_text(output, quote=False)
+
+
+@admins
+@update_logger
+def quote_remove(bot, update, args):
+
+    if not args:
+        update.message.reply_text("Укажи id цитаты после /quoteremove")
+        return
+
+    try:
+        quote_id = int(args[0])
+        quote = Quote.get(Quote.id == quote_id)
+        quote_text = quote.text
+        quote.delete_instance()
+        output = "Цитата удалена:\n[{}] {}".format(quote_id, quote_text)
+    except ValueError:
+        output = "Укажи id цитаты после /quoteremove"
+    except DoesNotExist:
+        output = "Цитата не найдена."
+
+    update.message.reply_text(output, quote=False)
 
 
 def main():
@@ -356,9 +320,12 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('ping', ping))
-    dp.add_handler(CommandHandler('help', help))
+    dp.add_handler(CommandHandler('help', show_help))
     dp.add_handler(CommandHandler('myid', myid))
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
+    dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
+    dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
+    dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
