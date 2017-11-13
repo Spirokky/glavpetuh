@@ -22,15 +22,21 @@ logger = logging.getLogger(__name__)
 
 def admins(func):
     """
-    Restrict access to user if he is not admin
+    Restrict access if user is not admin
     """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
+        chat_id = update.effective_chat.id
+        title = update.effective_chat.title
+        chat_name = "private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
         if user_id not in cfg['Telegram']['admins']:
-            print("Admin access denied for {} [{}]".format(username, user_id))
+            msg = "Admin access denied for {} [{}] in {} [{}]"
+            msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
+            print(msg)
+            bot.send_message(303422193, msg)            
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
@@ -38,16 +44,21 @@ def admins(func):
 
 def restricted(func):
     """
-    Restrict command use outside trusted group
+    Restrict access if chat is not trusted
     """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
-        print(update)
         chat_id = update.effective_chat.id
+        title = update.effective_chat.title
+        chat_name = "private chat" if title is None else title
+        user_id = update.effective_user.id
         username = update.effective_user.username
         if chat_id not in cfg['Telegram']['groups']:
-            print("Group access denied for {} [{}]".format(username, chat_id))
+            msg = "Group access denied for {} [{}] in {} [{}]"
+            msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
+            print(msg)
+            bot.send_message(303422193, msg)
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
@@ -71,8 +82,8 @@ def error_handler(bot, update, error):
         pass
 
 
-@update_logger
 @restricted
+@update_logger
 def show_help(bot, update):
     help_message = """
 Доступные команды [бота](https://github.com/Spirokky/glavpetuh):
@@ -101,6 +112,7 @@ def show_help(bot, update):
                               disable_web_page_preview=True)
 
 
+@restricted
 @update_logger
 def myid(bot, update):
     user = update.effective_user.first_name
@@ -110,6 +122,7 @@ def myid(bot, update):
                               disable_notification=True)
 
 
+@restricted
 @update_logger
 def ping(bot, update):
     update.message.reply_text('Курлык!',
@@ -117,6 +130,7 @@ def ping(bot, update):
                               disable_notification=True)
 
 
+@restricted
 @update_logger
 def next_level(bot, update, args):
     if len(args) == 0:
@@ -138,6 +152,7 @@ def next_level(bot, update, args):
                               disable_notification=True)
 
 
+@restricted
 @update_logger
 def exp_table(bot, update, args):
     exp = Exp()
@@ -161,6 +176,8 @@ def exp_table(bot, update, args):
                                   disable_notification=True)
 
 
+@restricted
+@update_logger
 def get_exp_stats_today(bot, update):
     exp = Exp()
     data = exp.get_stats_today()
@@ -191,6 +208,7 @@ def get_exp_stats_today(bot, update):
         return
 
 
+@restricted
 @update_logger
 def l2on_get_player(bot, update):
     nickname = update.message.text.strip('/').split()[0]
@@ -202,6 +220,7 @@ def l2on_get_player(bot, update):
                               disable_notification=True)
 
 
+@restricted
 @update_logger
 def vote(bot, update, args):
     msg = ' '.join(args) + '\n'
@@ -214,6 +233,7 @@ def vote(bot, update, args):
     update.message.reply_text(msg, reply_markup=reply_markup, quote=False)
 
 
+@restricted
 @update_logger
 def button(bot, update):
     query = update.callback_query
