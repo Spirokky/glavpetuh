@@ -315,7 +315,8 @@ def quote_add(bot, update, args):
 def quote_remove(bot, update, args):
 
     if not args:
-        update.message.reply_text("Укажи id цитаты после /quoteremove")
+        update.message.reply_text("Укажи id цитаты после /quoteremove",
+                                  quote=False)
         return
 
     try:
