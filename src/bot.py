@@ -1,17 +1,16 @@
 import datetime
 import logging
-import sqlite3
 import yaml
 import pandas as pd
 
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
+from telegram.error import TimedOut
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from core.exp import Exp, render_mpl_table
-from core.l2on import Player
-from core.quotes import Quote
-from core import tweelistener
+from core import Quote, Exp, Player, render_mpl_table
+from peewee import fn, DoesNotExist
+
 
 with open('config.yaml', 'r') as f:
     cfg = yaml.load(f)
@@ -20,21 +19,24 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-db = 'core/database.db'
-db_test = 'core/testing_database.db'
-
 
 def admins(func):
     """
-    Restrict access to user if he is not admin
+    Restrict access if user is not admin
     """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
+        chat_id = update.effective_chat.id
+        title = update.effective_chat.title
+        chat_name = "private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
         if user_id not in cfg['Telegram']['admins']:
-            print("Admin access denied for {} [{}]".format(username, user_id))
+            msg = "Admin access denied for {} [{}] in {} [{}]"
+            msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
+            print(msg)
+            bot.send_message(303422193, msg)            
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
@@ -42,16 +44,21 @@ def admins(func):
 
 def restricted(func):
     """
-    Restrict command use outside trusted group
+    Restrict access if chat is not trusted
     """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
-        print(update)
         chat_id = update.effective_chat.id
+        title = update.effective_chat.title
+        chat_name = "private chat" if title is None else title
+        user_id = update.effective_user.id
         username = update.effective_user.username
         if chat_id not in cfg['Telegram']['groups']:
-            print("Group access denied for {} [{}]".format(username, chat_id))
+            msg = "Group access denied for {} [{}] in {} [{}]"
+            msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
+            print(msg)
+            bot.send_message(303422193, msg)
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
@@ -68,13 +75,16 @@ def update_logger(func):
     return wrapped
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"' % (update, error))
+def error_handler(bot, update, error):
+    try:
+        logger.warning('Update "%s" caused error "%s"' % (update, error))
+    except TimedOut:
+        pass
 
 
-@update_logger
 @restricted
-def help(bot, update):
+@update_logger
+def show_help(bot, update):
     help_message = """
 Доступные команды [бота](https://github.com/Spirokky/glavpetuh):
 
@@ -102,6 +112,7 @@ def help(bot, update):
                               disable_web_page_preview=True)
 
 
+@restricted
 @update_logger
 def myid(bot, update):
     user = update.effective_user.first_name
@@ -111,6 +122,7 @@ def myid(bot, update):
                               disable_notification=True)
 
 
+@restricted
 @update_logger
 def ping(bot, update):
     update.message.reply_text('Курлык!',
@@ -119,80 +131,6 @@ def ping(bot, update):
 
 
 @restricted
-@update_logger
-def quote_get(bot, update, args):
-    quote = Quote(db)
-
-    if not args:
-        query = quote.getrandom()
-
-    elif '-a' in args:
-        query = quote.get(all=True)
-        res = ""
-
-        for item in query:
-            quote_id, text = item[0], item[1]
-            res += "{}. {}\n".format(quote_id, text)
-
-        update.message.reply_text(res,
-                                  quote=False,
-                                  disable_notification=True)
-        return
-    else:
-        query = quote.get(args[0])
-
-    quote_id, text = query[0], query[1]
-    reply = "{}".format(text)
-    update.message.reply_text(reply,
-                              quote=False,
-                              disable_notification=True)
-
-
-@admins
-@update_logger
-def quote_add(bot, update, args):
-    quote = Quote(db)
-    data = " ".join(args)
-
-    if not args:
-        return
-
-    try:
-        res = quote.add(data)
-        quote_id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} добавлена:\n{}".format(quote_id, text),
-                                  quote=False,
-                                  disable_notification=True)
-    except Exception as e:
-        update.message.reply_text("Не удалось добавить цитату: '%s'" % (e),
-                                  quote=False,
-                                  disable_notification=True)
-        return
-
-
-@admins
-@update_logger
-def quote_remove(bot, update, args):
-    quote = Quote(db)
-
-    if not args:
-        return
-    else:
-        quote_id = args[0]
-
-    try:
-        res = quote.remove(quote_id)
-        quote_id, text = res[0], res[1]
-        update.message.reply_text("Цитата № {} удалена:\n{}".format(quote_id, text),
-                                  quote=False,
-                                  disable_notification=True)
-        return
-    except Exception as e:
-        update.message.reply_text("Не удалось удалить цитату: '%s'" % (e),
-                                  quote=False,
-                                  disable_notification=True)
-
-
 @update_logger
 def next_level(bot, update, args):
     if len(args) == 0:
@@ -214,6 +152,7 @@ def next_level(bot, update, args):
                               disable_notification=True)
 
 
+@restricted
 @update_logger
 def exp_table(bot, update, args):
     exp = Exp()
@@ -253,11 +192,9 @@ def get_exp_stats_today(bot, update):
 
         try:
             filename = render_mpl_table(df, header_columns=0, col_width=2.0)
-            print(filename)
-
+            logger.info(filename)
             with open(filename, 'rb') as img:
-                bot.send_photo(chat_id=303422193, photo=img)
-
+                bot.send_photo(chat_id=cfg['Telegram']['maingroup'], photo=img)
             return
         except Exception as e:
             logger.error(e)
@@ -267,6 +204,7 @@ def get_exp_stats_today(bot, update):
         return
 
 
+@restricted
 @update_logger
 def l2on_get_player(bot, update):
     nickname = update.message.text.strip('/').split()[0]
@@ -278,29 +216,7 @@ def l2on_get_player(bot, update):
                               disable_notification=True)
 
 
-def get_tweets(bot, job):
-    tweet = None
-    try:
-        connect = sqlite3.connect(db)
-        cursor = connect.cursor()
-
-        with connect:
-            cursor.execute("SELECT tweet FROM tweets WHERE status = 0;")
-            tweet = cursor.fetchall()[-1][0]
-            cursor.execute("UPDATE tweets SET status = 1 WHERE status = 0")
-
-    except IndexError:
-        pass
-
-    except BaseException as e:
-        logger.error(e)
-
-    if tweet:
-        bot.send_message(chat_id=-1001105947437,
-                         text=tweet,
-                         disable_web_page_preview=True)
-
-
+@restricted
 @update_logger
 def vote(bot, update, args):
     msg = ' '.join(args) + '\n'
@@ -313,6 +229,7 @@ def vote(bot, update, args):
     update.message.reply_text(msg, reply_markup=reply_markup, quote=False)
 
 
+@restricted
 @update_logger
 def button(bot, update):
     query = update.callback_query
@@ -323,7 +240,7 @@ def button(bot, update):
         emj = '\u274C '
 
     keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
-                 InlineKeyboardButton("Нет", callback_data='2')], ]
+                 InlineKeyboardButton("Нет", callback_data='2')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -345,8 +262,74 @@ def button(bot, update):
                           reply_markup=reply_markup,)
 
 
-def worker():
-    tweelistener.main()
+@restricted
+@update_logger
+def quote_get(bot, update, args):
+    output = ''
+
+    if not args:
+        query = Quote.select() \
+                     .order_by(fn.Random()) \
+                     .limit(1) \
+                     .get()
+
+        output = query.text
+
+    elif '-a' in args:
+        query = Quote.select()
+        for q in query:
+            output += "[{}] {}\n".format(q.id, q.text)
+
+    else:
+        try:
+            quote_id = int(args[0])
+            query = Quote.get(Quote.id == quote_id)
+            output = query.text
+        except ValueError:
+            query = Quote.select() \
+                         .order_by(fn.Random()) \
+                         .limit(1) \
+                         .get()
+            output = query.text
+        except DoesNotExist:
+            output = "Цитата не найдена"
+
+    update.message.reply_text(output, quote=False)
+
+
+@admins
+@update_logger
+def quote_add(bot, update, args):
+    if not args:
+        output = "Напиши цитату после /quoteadd"
+    else:
+        new_quote = " ".join(args)
+        query = Quote.create(text=new_quote)
+        output = "Цитата добавлена:\n{}".format(query.text)
+
+    update.message.reply_text(output, quote=False)
+
+
+@admins
+@update_logger
+def quote_remove(bot, update, args):
+
+    if not args:
+        update.message.reply_text("Укажи id цитаты после /quoteremove")
+        return
+
+    try:
+        quote_id = int(args[0])
+        quote = Quote.get(Quote.id == quote_id)
+        quote_text = quote.text
+        quote.delete_instance()
+        output = "Цитата удалена:\n[{}] {}".format(quote_id, quote_text)
+    except ValueError:
+        output = "Укажи id цитаты после /quoteremove"
+    except DoesNotExist:
+        output = "Цитата не найдена."
+
+    update.message.reply_text(output, quote=False)
 
 
 def main():
@@ -356,7 +339,7 @@ def main():
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('ping', ping))
-    dp.add_handler(CommandHandler('help', help))
+    dp.add_handler(CommandHandler('help', show_help))
     dp.add_handler(CommandHandler('myid', myid))
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
@@ -364,14 +347,13 @@ def main():
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
     dp.add_handler(CommandHandler('vote', vote, pass_args=True))
-    # dp.add_handler(CommandHandler('stat', get_exp_stats_today))
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
-    dp.add_error_handler(error)
+    dp.add_error_handler(error_handler)
 
     queue = updater.job_queue
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=6, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=7, minute=30))
 
     updater.start_polling()
     updater.idle()

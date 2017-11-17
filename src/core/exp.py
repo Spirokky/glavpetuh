@@ -1,11 +1,6 @@
 import requests
-import numpy as np
-import matplotlib
 import yaml
 import re
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import six
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -159,39 +154,5 @@ class Exp(object):
         return result
 
 
-def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
-                     header_color='#40466e', row_colors=['#f7f7f7', 'w'],
-                     edge_color='w', bbox=[0, 0, 1, 1], header_columns=0,
-                     ax=None, **kwargs):
-
-    if ax is None:
-        size = (np.array(data.shape[::-1]) + np.array([0, 1])) * np.array([col_width, row_height])
-        fig, ax = plt.subplots(figsize=size)
-        fig.subplots_adjust(left=0, bottom=0, right=1, top=1)
-        ax.axis('off')
-
-    mpl_table = ax.table(cellText=data.values, cellLoc="center", bbox=bbox, colLabels=data.columns, **kwargs)
-
-    mpl_table.auto_set_font_size(False)
-    mpl_table.set_fontsize(font_size)
-
-    for k, cell in six.iteritems(mpl_table._cells):
-        cell.set_edgecolor(edge_color)
-        if k[0] == 0 or k[1] < header_columns:
-            cell.set_text_props(weight='bold', color='w')
-            cell.set_facecolor(header_color)
-        else:
-            cell.set_facecolor(row_colors[k[0]%len(row_colors)])
-
-    try:
-        now = datetime.now().strftime("%Y-%m-%d")
-        filename = "{}-stats.png".format(now)
-        plt.savefig(filename)
-        return filename
-    except Exception:
-        return None
-
-
 if __name__ == "__main__":
-    e = Exp()
-    print(e.exp_table('23', '30'))
+    pass
