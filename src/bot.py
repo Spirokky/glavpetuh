@@ -176,8 +176,6 @@ def exp_table(bot, update, args):
                                   disable_notification=True)
 
 
-@restricted
-@update_logger
 def get_exp_stats_today(bot, update):
     exp = Exp()
     data = exp.get_stats_today()
@@ -194,11 +192,9 @@ def get_exp_stats_today(bot, update):
 
         try:
             filename = render_mpl_table(df, header_columns=0, col_width=2.0)
-            print(filename)
-
+            logger.info(filename)
             with open(filename, 'rb') as img:
-                bot.send_photo(chat_id=303422193, photo=img)
-
+                bot.send_photo(chat_id=cfg['Telegram']['maingroup'], photo=img)
             return
         except Exception as e:
             logger.error(e)
@@ -244,7 +240,7 @@ def button(bot, update):
         emj = '\u274C '
 
     keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
-                 InlineKeyboardButton("Нет", callback_data='2')], ]
+                 InlineKeyboardButton("Нет", callback_data='2')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -346,22 +342,18 @@ def main():
     dp.add_handler(CommandHandler('help', show_help))
     dp.add_handler(CommandHandler('myid', myid))
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
-    dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
-    dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
-    dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
     dp.add_handler(CommandHandler('lvl', next_level, pass_args=True))
     dp.add_handler(CommandHandler('exp', exp_table, pass_args=True))
     dp.add_handler(CommandHandler('vote', vote, pass_args=True))
-    # dp.add_handler(CommandHandler('stat', get_exp_stats_today))
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
 
     dp.add_error_handler(error_handler)
 
     queue = updater.job_queue
-    queue.run_daily(get_exp_stats_today, datetime.time(hour=6, minute=30))
+    queue.run_daily(get_exp_stats_today, datetime.time(hour=7, minute=30))
 
     updater.start_polling()
     updater.idle()
