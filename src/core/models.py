@@ -3,7 +3,7 @@ from peewee import *
 from playhouse.migrate import migrate, SqliteMigrator
 
 
-db = SqliteDatabase('data_test.db', timeout=10)
+db = SqliteDatabase('data.db', timeout=10)
 
 
 class Quote(Model):
