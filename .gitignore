@@ -11,6 +11,7 @@ phantomjs*
 *.py[cod]
 testdb.py
 secrets.py
+setupdb.py
 
 
 # executions
