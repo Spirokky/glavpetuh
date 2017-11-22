@@ -1,6 +1,7 @@
 import re
 import os
 import string
+import logging
 import numpy as np
 import six
 import matplotlib
@@ -8,6 +9,17 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from datetime import datetime
+
+
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('utils')
+logger.setLevel(logging.DEBUG)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+console.setFormatter(formatter)
+
+logger.addHandler(console)
 
 
 def clean_data(dct):
@@ -59,11 +71,15 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
 
         if 'statistics' not in os.listdir():
             os.mkdir('statistics')
+            logger.info("Created directory /statistics")
 
         filename = "statistics/{}.png".format(now)
+        logger.info("Saving file %s" % filename)
         plt.savefig(filename)
+        logger.info("File saved")
         return filename
-    except Exception:
+    except Exception as e:
+        logger.warning("Something went wrong: %s" % e)
         return None
 
 

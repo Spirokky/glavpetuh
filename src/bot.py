@@ -1,12 +1,13 @@
 import datetime
 import logging
 import yaml
+import os
 import pandas as pd
 
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
-from telegram.error import TimedOut
+from telegram.error import TimedOut, Unauthorized
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import Quote, Exp, Player, render_mpl_table
 from peewee import fn, DoesNotExist
@@ -15,9 +16,26 @@ from peewee import fn, DoesNotExist
 with open('config.yaml', 'r') as f:
     cfg = yaml.load(f)
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                    level=logging.INFO)
-logger = logging.getLogger(__name__)
+if 'logs' not in os.listdir():
+    os.mkdir('logs')
+
+formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                              datefmt="%Y-%m-%d %H:%M:%S")
+logger = logging.getLogger('bot')
+logger.setLevel(logging.DEBUG)
+
+fh = logging.FileHandler('logs/bot.log')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+console.setFormatter(formatter)
+
+logger.addHandler(fh)
+logger.addHandler(console)
+
+logger.info("Starting...")
 
 
 def admins(func):
@@ -28,15 +46,15 @@ def admins(func):
     def wrapped(bot, update, *args, **kwargs):
         chat_id = update.effective_chat.id
         title = update.effective_chat.title
-        chat_name = "private chat" if title is None else title
+        chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
         if user_id not in cfg['Telegram']['admins']:
             msg = "Admin access denied for {} [{}] in {} [{}]"
             msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
-            print(msg)
-            bot.send_message(303422193, msg)            
+            bot.send_message(cfg['Telegram']['mainchat'], msg)
+            logger.warning(msg)
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
@@ -50,34 +68,42 @@ def restricted(func):
     def wrapped(bot, update, *args, **kwargs):
         chat_id = update.effective_chat.id
         title = update.effective_chat.title
-        chat_name = "private chat" if title is None else title
+        chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
         if chat_id not in cfg['Telegram']['groups']:
             msg = "Group access denied for {} [{}] in {} [{}]"
             msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
-            print(msg)
-            bot.send_message(303422193, msg)
+            bot.send_message(cfg['Telegram']['mainchat'], msg)
+            logger.warning(msg)
             return
         return func(bot, update, *args, **kwargs)
     return wrapped
 
 
 def update_logger(func):
+    """
+    Logs updates
+    """
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
-        now = datetime.datetime.now()
-        now = now.strftime('%A, %d. %B %Y %X')
-        res = '{}\n[{}]\n{}\n'.format('-'*80, now, update)
-        print(res)
+        chat_id = update.effective_chat.id
+        title = update.effective_chat.title
+        chat_name = "Private chat" if title is None else title
+        user_id = update.effective_user.id
+        username = update.effective_user.username
+        text = update.message.text
+        msg = "{} [{}] :: {} [{}] :: {}"
+        msg = msg.format(chat_name, chat_id, username, user_id, text)
+        logger.info(msg)
         return func(bot, update, *args, **kwargs)
     return wrapped
 
 
 def error_handler(bot, update, error):
     try:
-        logger.warning('Update "%s" caused error "%s"' % (update, error))
+        logger.error('Update "%s" caused error "%s"' % (update, error))
     except TimedOut:
         pass
 
@@ -192,14 +218,14 @@ def get_exp_stats_today(bot, update):
 
         try:
             filename = render_mpl_table(df, header_columns=0, col_width=2.0)
-            logger.info(filename)
+            logger.info("Sending photo %s" % filename)
             with open(filename, 'rb') as img:
                 bot.send_photo(chat_id=cfg['Telegram']['maingroup'], photo=img)
             return
         except Exception as e:
             logger.error(e)
     else:
-        bot.send_message(chat_id=303422193,
+        bot.send_message(chat_id=cfg['Telegram']['mainchat'],
                          text="Не удалось загрузить данные.")
         return
 
@@ -334,9 +360,13 @@ def quote_remove(bot, update, args):
 
 
 def main():
-    logger.info("Starting...")
 
-    updater = Updater(cfg['Telegram']['token'])
+    try:
+        updater = Updater(cfg['Telegram']['token'])
+        logger.info("Token approved")
+    except Unauthorized:
+        logger.error("Invalid token")
+
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler('ping', ping))
@@ -357,6 +387,7 @@ def main():
     queue.run_daily(get_exp_stats_today, datetime.time(hour=7, minute=30))
 
     updater.start_polling()
+    logger.info("Connection established")
     updater.idle()
 
 
