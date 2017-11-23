@@ -1,13 +1,14 @@
 import datetime
 import logging
 import yaml
+import sys
 import os
 import pandas as pd
 
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
-from telegram.error import TimedOut, Unauthorized
+from telegram.error import TimedOut, InvalidToken
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import Quote, Exp, Player, render_mpl_table
 from peewee import fn, DoesNotExist
@@ -19,7 +20,7 @@ with open('config.yaml', 'r') as f:
 if 'logs' not in os.listdir():
     os.mkdir('logs')
 
-formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s',
                               datefmt="%Y-%m-%d %H:%M:%S")
 logger = logging.getLogger('bot')
 logger.setLevel(logging.DEBUG)
@@ -364,8 +365,9 @@ def main():
     try:
         updater = Updater(cfg['Telegram']['token'])
         logger.info("Token approved")
-    except Unauthorized:
-        logger.error("Invalid token")
+    except InvalidToken:
+        logger.error('Invalid token')
+        sys.exit(0)
 
     dp = updater.dispatcher
 

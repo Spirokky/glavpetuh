@@ -15,10 +15,15 @@ formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(messag
 logger = logging.getLogger('utils')
 logger.setLevel(logging.DEBUG)
 
+fh = logging.FileHandler('logs/bot.log')
+fh.setLevel(logging.DEBUG)
+fh.setFormatter(formatter)
+
 console = logging.StreamHandler()
 console.setLevel(logging.INFO)
 console.setFormatter(formatter)
 
+logger.addHandler(fh)
 logger.addHandler(console)
 
 
@@ -79,7 +84,7 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
         logger.info("File saved")
         return filename
     except Exception as e:
-        logger.warning("Something went wrong: %s" % e)
+        logger.error("Something went wrong: %s" % e)
         return None
 
 
