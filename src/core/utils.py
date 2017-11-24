@@ -14,10 +14,10 @@ from datetime import datetime
 formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s',
                               datefmt="%Y-%m-%d %H:%M:%S")
 logger = logging.getLogger('utils')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 fh = logging.FileHandler('logs/bot.log')
-fh.setLevel(logging.DEBUG)
+fh.setLevel(logging.INFO)
 fh.setFormatter(formatter)
 
 console = logging.StreamHandler()
