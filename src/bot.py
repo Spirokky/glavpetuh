@@ -8,14 +8,13 @@ import pandas as pd
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
-from telegram.error import TimedOut, InvalidToken
+from telegram.error import NetworkError, InvalidToken
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import Quote, Exp, Player, render_mpl_table
 from peewee import fn, DoesNotExist
 
 
-with open('config.yaml', 'r') as f:
-    cfg = yaml.load(f)
+cfg = yaml.safe_load(open('config.yaml', 'rt'))
 
 if 'logs' not in os.listdir():
     os.mkdir('logs')
@@ -105,7 +104,7 @@ def update_logger(func):
 def error_handler(bot, update, error):
     try:
         logger.error('Update "%s" caused error "%s"' % (update, error))
-    except TimedOut:
+    except NetworkError:
         pass
 
 
