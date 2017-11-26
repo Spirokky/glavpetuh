@@ -25,6 +25,7 @@ setupdb.py
 # configs
 *.yaml
 !config.example.yaml
+!logging.yaml
 
 
 # databases
