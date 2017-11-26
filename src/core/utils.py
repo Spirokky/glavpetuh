@@ -5,27 +5,15 @@ import logging
 import numpy as np
 import six
 import matplotlib
+import yaml
+import logging.config
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from datetime import datetime
 
 
-formatter = logging.Formatter(fmt='%(asctime)s - %(levelname)s - %(message)s',
-                              datefmt="%Y-%m-%d %H:%M:%S")
-logger = logging.getLogger('utils')
-logger.setLevel(logging.INFO)
-
-fh = logging.FileHandler('logs/bot.log')
-fh.setLevel(logging.INFO)
-fh.setFormatter(formatter)
-
-console = logging.StreamHandler()
-console.setLevel(logging.INFO)
-console.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(console)
+logger = logging.getLogger('')
 
 
 def clean_data(dct):
@@ -45,6 +33,24 @@ def validate_nickname(nickname):
         return 2
     else:
         return 3
+
+
+def setup_logging(default_path='logging.yaml',
+                  default_level=logging.INFO,
+                  env_key='LOG_CFG'):
+    """
+    Setup logging configuration
+    """
+    path = default_path
+    value = os.getenv(env_key, None)
+    if value:
+        path = value
+    if os.path.exists(path):
+        with open(path, 'rt') as f:
+            config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    else:
+        logging.basicConfig(level=default_level)
 
 
 def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
@@ -87,6 +93,9 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
     except Exception as e:
         logger.error("Something went wrong: %s" % e)
         return None
+
+
+setup_logging()
 
 
 if __name__ == '__main__':
