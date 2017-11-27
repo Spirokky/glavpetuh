@@ -4,7 +4,7 @@ Telegram:
     - -1234567890
   admins:
     - 1234567890
-  mainchat: 1234567890
+  mainAdmin: 1234567890
   maingroup: -1234567890
 
 Twitter:
@@ -14,6 +14,7 @@ Twitter:
   consumer_secret: 'XXXXXXXX'
 
 L2tracker:
+  - 'url'
   - 'url'
 
 phantomjs: 'path/to/phantomjs'

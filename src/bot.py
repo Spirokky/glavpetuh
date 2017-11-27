@@ -8,7 +8,7 @@ import pandas as pd
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
-from telegram.error import NetworkError, InvalidToken
+from telegram.error import (TimedOut, InvalidToken)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import (Quote, Exp, Player, render_mpl_table,
                   setup_logging)
@@ -21,7 +21,8 @@ if 'logs' not in os.listdir():
     os.mkdir('logs')
 
 setup_logging()
-logger = logging.getLogger('')
+logger = logging.getLogger('main')
+elogger = logging.getLogger('error')
 logger.info("Starting...")
 
 
@@ -37,10 +38,10 @@ def admins(func):
         user_id = update.effective_user.id
         username = update.effective_user.username
         if user_id not in cfg['Telegram']['admins']:
-            msg = "Admin access denied for {} [{}] in {} [{}]"
+            msg = "Admin access denied for {} ({}) in {} ({})"
             msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
-            bot.send_message(cfg['Telegram']['mainchat'], msg)
+            bot.send_message(cfg['Telegram']['mainAdmin'], msg)
             logger.warning(msg)
             return
         return func(bot, update, *args, **kwargs)
@@ -59,10 +60,10 @@ def restricted(func):
         user_id = update.effective_user.id
         username = update.effective_user.username
         if chat_id not in cfg['Telegram']['groups']:
-            msg = "Group access denied for {} [{}] in {} [{}]"
+            msg = "Group access denied for {} ({}) in {} ({})"
             msg = msg.format(username, user_id, chat_name, chat_id)
             update.message.reply_text('Пiшов нахуй!', quote=False)
-            bot.send_message(cfg['Telegram']['mainchat'], msg)
+            bot.send_message(cfg['Telegram']['mainAdmin'], msg)
             logger.warning(msg)
             return
         return func(bot, update, *args, **kwargs)
@@ -81,7 +82,7 @@ def update_logger(func):
         user_id = update.effective_user.id
         username = update.effective_user.username
         text = update.message.text
-        msg = "{} [{}] :: {} [{}] :: {}"
+        msg = "{} ({}) :: {} ({}) :: {}"
         msg = msg.format(chat_name, chat_id, username, user_id, text)
         logger.info(msg)
         return func(bot, update, *args, **kwargs)
@@ -90,9 +91,10 @@ def update_logger(func):
 
 def error_handler(bot, update, error):
     try:
-        logger.error('Update "%s" caused error "%s"' % (update, error))
-    except NetworkError:
+        # elogger.error('Update "%s" caused error "%s"' % (update, error))
         pass
+    except TimedOut:
+        elogger.error('THIS SHIT IS TIMED OUT AGAIN')
 
 
 @restricted
@@ -212,7 +214,7 @@ def get_exp_stats_today(bot, update):
         except Exception as e:
             logger.error(e)
     else:
-        bot.send_message(chat_id=cfg['Telegram']['mainchat'],
+        bot.send_message(chat_id=cfg['Telegram']['mainAdmin'],
                          text="Не удалось загрузить данные.")
         return
 
