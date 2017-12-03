@@ -54,7 +54,6 @@ def restricted(func):
 
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
-        print(args)
         chat_id = update.effective_chat.id
         title = update.effective_chat.title
         chat_name = "Private chat" if title is None else title
