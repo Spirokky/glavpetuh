@@ -166,6 +166,17 @@ def ping(bot, update):
                               disable_notification=True)
 
 
+@admins
+@update_logger
+def send_message(bot, update, args):
+    if args:
+        msg = ' '.join(args)
+        bot.send_message(chat_id=cfg['Telegram']['maingroup'],
+                         text=msg)
+    else:
+        return
+
+
 @restricted
 @update_logger
 def next_level(bot, update, args):
@@ -386,6 +397,7 @@ def main():
     dp.add_handler(CommandHandler('ping', ping))
     dp.add_handler(CommandHandler('help', show_help))
     dp.add_handler(CommandHandler('myid', myid))
+    dp.add_handler(CommandHandler('sendm', send_message, pass_args=True))
     dp.add_handler(CommandHandler('quote', quote_get, pass_args=True))
     dp.add_handler(CommandHandler('quoteadd', quote_add, pass_args=True))
     dp.add_handler(CommandHandler('quoteremove', quote_remove, pass_args=True))
