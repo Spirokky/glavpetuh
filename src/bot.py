@@ -34,9 +34,10 @@ def admins(func):
         chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
+        text = update.message.text
         if user_id not in cfg['Telegram']['admins']:
-            msg = "Admin access denied for {} ({}) in {} ({})"
-            msg = msg.format(username, user_id, chat_name, chat_id)
+            msg = "Admin access denied for {} ({}) in {} ({}) :: {}"
+            msg = msg.format(username, user_id, chat_name, chat_id, text)
             update.message.reply_text('Пiшов нахуй!', quote=False)
             bot.send_message(cfg['Telegram']['mainAdmin'], msg)
             logger.warning(msg)
@@ -53,14 +54,16 @@ def restricted(func):
 
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
+        print(args)
         chat_id = update.effective_chat.id
         title = update.effective_chat.title
         chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
+        text = update.message.text
         if chat_id not in cfg['Telegram']['groups']:
-            msg = "Group access denied for {} ({}) in {} ({})"
-            msg = msg.format(username, user_id, chat_name, chat_id)
+            msg = "Group access denied for {} ({}) in {} ({}) :: {}"
+            msg = msg.format(username, user_id, chat_name, chat_id, text)
             update.message.reply_text('Пiшов нахуй!', quote=False)
             bot.send_message(cfg['Telegram']['mainAdmin'], msg)
             logger.warning(msg)
