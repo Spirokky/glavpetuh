@@ -7,11 +7,11 @@ import six
 import matplotlib
 import yaml
 import logging.config
+
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from datetime import datetime
-
 
 logger = logging.getLogger('')
 
@@ -41,6 +41,10 @@ def setup_logging(default_path='logging.yaml',
     """
     Setup logging configuration
     """
+
+    if 'logs' not in os.listdir():
+        os.mkdir('logs')
+
     path = default_path
     value = os.getenv(env_key, None)
     if value:
@@ -83,7 +87,7 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
 
         if 'statistics' not in os.listdir():
             os.mkdir('statistics')
-            logger.info("Created directory /statistics")
+            logger.info("Create directory /statistics")
 
         filename = "statistics/{}.png".format(now)
         logger.info("Saving file %s" % filename)
@@ -96,7 +100,6 @@ def render_mpl_table(data, col_width=1.0, row_height=0.625, font_size=12,
 
 
 setup_logging()
-
 
 if __name__ == '__main__':
     pass

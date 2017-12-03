@@ -2,27 +2,23 @@ import datetime
 import logging
 import yaml
 import sys
-import os
 import pandas as pd
 
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
-from telegram.error import (TimedOut, InvalidToken)
+from telegram.error import (TimedOut, InvalidToken, NetworkError)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import (Quote, Exp, Player, render_mpl_table,
                   setup_logging)
 from peewee import fn, DoesNotExist
 
-
 cfg = yaml.safe_load(open('config.yaml', 'rt'))
 
-if 'logs' not in os.listdir():
-    os.mkdir('logs')
-
+# Setting up logging stuff
 setup_logging()
 logger = logging.getLogger('main')
-elogger = logging.getLogger('error')
+
 logger.info("Starting...")
 
 
@@ -30,6 +26,7 @@ def admins(func):
     """
     Restrict access if user is not admin
     """
+
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
         chat_id = update.effective_chat.id
@@ -45,6 +42,7 @@ def admins(func):
             logger.warning(msg)
             return
         return func(bot, update, *args, **kwargs)
+
     return wrapped
 
 
@@ -52,6 +50,7 @@ def restricted(func):
     """
     Restrict access if chat is not trusted
     """
+
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
         chat_id = update.effective_chat.id
@@ -67,6 +66,7 @@ def restricted(func):
             logger.warning(msg)
             return
         return func(bot, update, *args, **kwargs)
+
     return wrapped
 
 
@@ -74,6 +74,7 @@ def update_logger(func):
     """
     Logs updates
     """
+
     @wraps(func)
     def wrapped(bot, update, *args, **kwargs):
         chat_id = update.effective_chat.id
@@ -86,6 +87,7 @@ def update_logger(func):
         msg = msg.format(chat_name, chat_id, username, user_id, text)
         logger.info(msg)
         return func(bot, update, *args, **kwargs)
+
     return wrapped
 
 
@@ -95,6 +97,8 @@ def error_handler(bot, update, error):
         pass
     except TimedOut:
         elogger.error('THIS SHIT IS TIMED OUT AGAIN')
+    except NetworkError:
+        elogger.error('NETWORK SHIT JUST HAPPEND')
 
 
 @restricted
@@ -274,7 +278,7 @@ def button(bot, update):
     bot.edit_message_text(text=msg,
                           chat_id=query.message.chat_id,
                           message_id=query.message.message_id,
-                          reply_markup=reply_markup,)
+                          reply_markup=reply_markup, )
 
 
 @restricted
@@ -284,9 +288,9 @@ def quote_get(bot, update, args):
 
     if not args:
         query = Quote.select() \
-                     .order_by(fn.Random()) \
-                     .limit(1) \
-                     .get()
+            .order_by(fn.Random()) \
+            .limit(1) \
+            .get()
 
         output = query.text
 
@@ -302,9 +306,9 @@ def quote_get(bot, update, args):
             output = query.text
         except ValueError:
             query = Quote.select() \
-                         .order_by(fn.Random()) \
-                         .limit(1) \
-                         .get()
+                .order_by(fn.Random()) \
+                .limit(1) \
+                .get()
             output = query.text
         except DoesNotExist:
             output = "Цитата не найдена"
@@ -328,7 +332,6 @@ def quote_add(bot, update, args):
 @admins
 @update_logger
 def quote_remove(bot, update, args):
-
     if not args:
         update.message.reply_text("Укажи id цитаты после /quoteremove",
                                   quote=False)
@@ -349,7 +352,6 @@ def quote_remove(bot, update, args):
 
 
 def main():
-
     try:
         updater = Updater(cfg['Telegram']['token'])
         logger.info("Token approved")
@@ -358,6 +360,8 @@ def main():
         sys.exit(0)
 
     dp = updater.dispatcher
+
+    dp.add_error_handler(error_handler)
 
     dp.add_handler(CommandHandler('ping', ping))
     dp.add_handler(CommandHandler('help', show_help))
@@ -370,8 +374,6 @@ def main():
     dp.add_handler(CommandHandler('vote', vote, pass_args=True))
     dp.add_handler(CallbackQueryHandler(button))
     dp.add_handler(MessageHandler(Filters.command, l2on_get_player))
-
-    dp.add_error_handler(error_handler)
 
     queue = updater.job_queue
     queue.run_daily(get_exp_stats_today, datetime.time(hour=7, minute=30))
