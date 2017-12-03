@@ -7,7 +7,8 @@ import pandas as pd
 from functools import wraps
 from telegram.ext import (Updater, CommandHandler, MessageHandler,
                           Filters, CallbackQueryHandler)
-from telegram.error import (TimedOut, InvalidToken, NetworkError)
+from telegram.error import (TimedOut, InvalidToken, NetworkError,
+                            TelegramError)
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from core import (Quote, Exp, Player, render_mpl_table,
                   setup_logging)
@@ -34,7 +35,12 @@ def admins(func):
         chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
-        text = update.message.text
+        try:
+            text = update.message.text
+        except AttributeError:
+            query = update.callback_query
+            text = 'voted for "%s"' % query.data
+            text += ' in ' + '%s' % query.id
         if user_id not in cfg['Telegram']['admins']:
             msg = "Admin access denied for {} ({}) in {} ({}) :: {}"
             msg = msg.format(username, user_id, chat_name, chat_id, text)
@@ -59,7 +65,12 @@ def restricted(func):
         chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
-        text = update.message.text
+        try:
+            text = update.message.text
+        except AttributeError:
+            query = update.callback_query
+            text = 'voted for "%s"' % query.data
+            text += ' in ' + '%s' % query.id
         if chat_id not in cfg['Telegram']['groups']:
             msg = "Group access denied for {} ({}) in {} ({}) :: {}"
             msg = msg.format(username, user_id, chat_name, chat_id, text)
@@ -84,7 +95,12 @@ def update_logger(func):
         chat_name = "Private chat" if title is None else title
         user_id = update.effective_user.id
         username = update.effective_user.username
-        text = update.message.text
+        try:
+            text = update.message.text
+        except AttributeError:
+            query = update.callback_query
+            text = 'voted for "%s"' % query.data
+            text += ' in ' + '%s' % query.id
         msg = "{} ({}) :: {} ({}) :: {}"
         msg = msg.format(chat_name, chat_id, username, user_id, text)
         logger.info(msg)
@@ -95,12 +111,11 @@ def update_logger(func):
 
 def error_handler(bot, update, error):
     try:
-        # elogger.error('Update "%s" caused error "%s"' % (update, error))
-        pass
+        logger.error('Update "%s" caused error "%s"' % (update, error))
     except TimedOut:
-        elogger.error('THIS SHIT IS TIMED OUT AGAIN')
+        logger.error('THIS SHIT IS TIMED OUT AGAIN')
     except NetworkError:
-        elogger.error('NETWORK SHIT JUST HAPPEND')
+        logger.error('NETWORK SHIT JUST HAPPEND')
 
 
 @restricted
@@ -242,8 +257,8 @@ def l2on_get_player(bot, update):
 def vote(bot, update, args):
     msg = ' '.join(args) + '\n'
 
-    keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
-                 InlineKeyboardButton("Нет", callback_data='2')]]
+    keyboard = [[InlineKeyboardButton("Да", callback_data='Да'),
+                 InlineKeyboardButton("Нет", callback_data='Нет')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -255,13 +270,13 @@ def vote(bot, update, args):
 def button(bot, update):
     query = update.callback_query
 
-    if query.data == '1':
+    if query.data == 'Да':
         emj = '\u2705 '
     else:
         emj = '\u274C '
 
-    keyboard = [[InlineKeyboardButton("Да", callback_data='1'),
-                 InlineKeyboardButton("Нет", callback_data='2')]]
+    keyboard = [[InlineKeyboardButton("Да", callback_data='Да'),
+                 InlineKeyboardButton("Нет", callback_data='Нет')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -277,10 +292,13 @@ def button(bot, update):
 
     msg += upd
 
-    bot.edit_message_text(text=msg,
-                          chat_id=query.message.chat_id,
-                          message_id=query.message.message_id,
-                          reply_markup=reply_markup, )
+    try:
+        bot.edit_message_text(text=msg,
+                              chat_id=query.message.chat_id,
+                              message_id=query.message.message_id,
+                              reply_markup=reply_markup, )
+    except TelegramError:
+        return
 
 
 @restricted
