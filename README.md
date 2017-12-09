@@ -18,6 +18,8 @@ Install [Node.js](https://nodejs.org/en/) and download [PhantomJS](http://phanto
 
 Rename `config.example.yaml` to `config.yaml` and fill it properly.
 
+Run `python core/models.py` to create database tables
+
 Run bot:
 
     python bot.py
